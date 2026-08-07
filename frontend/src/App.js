@@ -1,55 +1,61 @@
-import { useEffect } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-import { HOME } from "@/constants/testIds";
+import React from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { Toaster } from "sonner";
+import { AuthProvider } from "@/context/AuthContext";
+import { I18nProvider } from "@/context/I18nContext";
+import { Layout } from "@/components/Layout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import Home from "@/pages/Home";
+import ProductDetail from "@/pages/ProductDetail";
+import Skills from "@/pages/Skills";
+import Community from "@/pages/Community";
+import FAQ from "@/pages/FAQ";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import AuthCallback from "@/pages/AuthCallback";
+import Account from "@/pages/Account";
+import AdminLayout from "@/pages/admin/AdminLayout";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminProducts from "@/pages/admin/AdminProducts";
+import AdminCategories from "@/pages/admin/AdminCategories";
+import AdminLeads from "@/pages/admin/AdminLeads";
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+function AppRouter() {
+  const location = useLocation();
+  if (location.hash?.includes("session_id=")) return <AuthCallback />;
 
   return (
-    <div>
-      <header className="App-header">
-        <a
-          data-testid={HOME.emergentLink}
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/" element={<Layout><Home /></Layout>} />
+      <Route path="/produto/:id" element={<Layout><ProductDetail /></Layout>} />
+      <Route path="/skills" element={<Layout><Skills /></Layout>} />
+      <Route path="/comunidade" element={<Layout><Community /></Layout>} />
+      <Route path="/faq" element={<Layout><FAQ /></Layout>} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/cadastro" element={<Register />} />
+      <Route path="/conta" element={<ProtectedRoute><Layout><Account /></Layout></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute adminOnly><Layout><AdminLayout /></Layout></ProtectedRoute>}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="produtos" element={<AdminProducts />} />
+        <Route path="categorias" element={<AdminCategories />} />
+        <Route path="leads" element={<AdminLeads />} />
+      </Route>
+    </Routes>
   );
-};
+}
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <I18nProvider>
+        <AuthProvider>
+          <AppRouter />
+          <Toaster position="top-right" theme="dark" toastOptions={{ style: { background: "#0A0A0F", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" } }} />
+        </AuthProvider>
+      </I18nProvider>
+    </BrowserRouter>
   );
 }
 
