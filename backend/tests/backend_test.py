@@ -99,7 +99,8 @@ class TestCatalog:
         v0 = prods[0].get("views", 0)
         r = requests.get(f"{API}/products/{pid}", timeout=30)
         assert r.status_code == 200
-        # response returns pre-increment doc; re-fetch via list to verify persistence
+        # Iteration 2: response now uses find_one_and_update(return_document=AFTER)
+        assert r.json().get("views", 0) >= v0 + 1
         after = requests.get(f"{API}/products", timeout=30).json()
         v1 = next(p["views"] for p in after if p["id"] == pid)
         assert v1 >= v0 + 1

@@ -94,6 +94,39 @@ body::before {
 .premium-glow { box-shadow: 0 0 24px rgba(255, 240, 0, 0.18); }
 .cyan-glow { box-shadow: 0 0 24px rgba(0, 240, 255, 0.15); }
 
+/* Immersive animated aurora orbs */
+.aurora {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.5;
+  pointer-events: none;
+  will-change: transform;
+}
+@keyframes floatA { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(40px,-30px) scale(1.1); } }
+@keyframes floatB { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-50px,40px) scale(1.15); } }
+.aurora-a { animation: floatA 14s ease-in-out infinite; }
+.aurora-b { animation: floatB 18s ease-in-out infinite; }
+
+.gradient-text {
+  background: linear-gradient(100deg, #7CC5FF 0%, #57E5C4 35%, #A08CFF 65%, #FF7A59 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* animated conic border for premium spotlight */
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.spin-slow { animation: spin-slow 8s linear infinite; }
+
+/* marquee */
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.marquee-track { animation: marquee 32s linear infinite; }
+.marquee-track:hover { animation-play-state: paused; }
+
+.hover-lift { transition: transform 0.35s cubic-bezier(0.2,0.8,0.2,1), border-color 0.35s, box-shadow 0.35s; }
+.hover-lift:hover { transform: translateY(-6px); }
+
 @layer base {
   [data-debug-wrapper="true"] { display: contents !important; }
 }

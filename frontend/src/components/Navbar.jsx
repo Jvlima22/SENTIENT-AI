@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useI18n } from "@/context/I18nContext";
-import { Menu, X, User, LayoutDashboard, Zap, Globe } from "lucide-react";
+import { useSearch } from "@/context/SearchContext";
+import { Logo } from "@/components/Logo";
+import { Menu, X, User, LayoutDashboard, Globe, Search } from "lucide-react";
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
   const { t, lang, toggle } = useI18n();
-  const [open, setOpen] = useState(false);
+  const { setOpen } = useSearch();
+  const [open, setMenu] = useState(false);
   const nav = useNavigate();
   const loc = useLocation();
 
@@ -17,20 +20,22 @@ export const Navbar = () => {
     { to: "/comunidade", label: t("community") },
     { to: "/faq", label: t("faq") },
   ];
-
   const isActive = (to) => (to === "/" ? loc.pathname === "/" : loc.pathname.startsWith(to));
 
   return (
     <header className="sticky top-0 z-50 glass" data-testid="navbar">
-      <div className="max-w-[1400px] mx-auto px-5 md:px-8 flex items-center justify-between h-16">
-        <Link to="/" className="flex items-center gap-2 group" data-testid="logo-link">
-          <div className="w-8 h-8 rounded-lg bg-[#00F0FF] flex items-center justify-center cyan-glow">
-            <Zap className="w-5 h-5 text-black" strokeWidth={2.5} />
-          </div>
-          <span className="font-display font-700 text-lg tracking-tight">SENTIENT<span className="text-[#00F0FF]">-AI</span></span>
-        </Link>
+      <div className="max-w-[1400px] mx-auto px-5 md:px-8 flex items-center justify-between h-16 gap-4">
+        <div className="flex items-center gap-4">
+          <Logo height={24} />
+          <button onClick={() => setOpen(true)} data-testid="search-pill"
+            className="hidden sm:flex items-center gap-2 rounded-full border border-white/10 bg-white/5 pl-3 pr-2 py-1.5 text-sm text-white/45 hover:border-white/25 hover:text-white/70 transition-colors">
+            <Search className="w-4 h-4" />
+            <span className="pr-6">Buscar</span>
+            <kbd className="text-[10px] font-mono-code bg-white/8 border border-white/10 rounded px-1.5 py-0.5 text-white/50">⌘K</kbd>
+          </button>
+        </div>
 
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden lg:flex items-center gap-8">
           {links.map((l) => (
             <Link key={l.to} to={l.to} data-testid={`nav-${l.to.replace("/", "") || "home"}`}
               className={`text-sm transition-colors hover:text-[#00F0FF] ${isActive(l.to) ? "text-[#00F0FF]" : "text-white/65"}`}>
@@ -40,6 +45,7 @@ export const Navbar = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
+          <button onClick={() => setOpen(true)} data-testid="search-icon-btn" className="sm:hidden text-white/60 hover:text-white transition-colors"><Search className="w-5 h-5" /></button>
           <button onClick={toggle} data-testid="lang-toggle"
             className="flex items-center gap-1 text-xs text-white/50 hover:text-white transition-colors font-mono-code uppercase">
             <Globe className="w-4 h-4" /> {lang}
@@ -66,27 +72,28 @@ export const Navbar = () => {
           )}
         </div>
 
-        <button className="md:hidden text-white" onClick={() => setOpen(!open)} data-testid="mobile-menu-btn">
-          {open ? <X /> : <Menu />}
-        </button>
+        <div className="flex items-center gap-3 md:hidden">
+          <button onClick={() => setOpen(true)} data-testid="search-icon-btn-mobile" className="text-white/60"><Search className="w-5 h-5" /></button>
+          <button className="text-white" onClick={() => setMenu(!open)} data-testid="mobile-menu-btn">{open ? <X /> : <Menu />}</button>
+        </div>
       </div>
 
       {open && (
         <div className="md:hidden glass border-t border-white/10 px-5 py-4 flex flex-col gap-4" data-testid="mobile-menu">
           {links.map((l) => (
-            <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="text-white/80 hover:text-[#00F0FF]">{l.label}</Link>
+            <Link key={l.to} to={l.to} onClick={() => setMenu(false)} className="text-white/80 hover:text-[#00F0FF]">{l.label}</Link>
           ))}
           <div className="h-px bg-white/10" />
           {user ? (
             <>
-              {user.role === "admin" && <Link to="/admin" onClick={() => setOpen(false)} className="text-white/80">{t("admin")}</Link>}
-              <Link to="/conta" onClick={() => setOpen(false)} className="text-white/80">{t("account")}</Link>
-              <button onClick={async () => { await logout(); setOpen(false); nav("/"); }} className="text-left text-[#FF3B30]">{t("logout")}</button>
+              {user.role === "admin" && <Link to="/admin" onClick={() => setMenu(false)} className="text-white/80">{t("admin")}</Link>}
+              <Link to="/conta" onClick={() => setMenu(false)} className="text-white/80">{t("account")}</Link>
+              <button onClick={async () => { await logout(); setMenu(false); nav("/"); }} className="text-left text-[#FF3B30]">{t("logout")}</button>
             </>
           ) : (
             <>
-              <Link to="/login" onClick={() => setOpen(false)} className="text-white/80">{t("login")}</Link>
-              <Link to="/cadastro" onClick={() => setOpen(false)} className="text-[#00F0FF]">{t("register")}</Link>
+              <Link to="/login" onClick={() => setMenu(false)} className="text-white/80">{t("login")}</Link>
+              <Link to="/cadastro" onClick={() => setMenu(false)} className="text-[#00F0FF]">{t("register")}</Link>
             </>
           )}
         </div>

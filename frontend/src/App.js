@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/context/AuthContext";
 import { I18nProvider } from "@/context/I18nContext";
+import { SearchProvider } from "@/context/SearchContext";
 import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
@@ -51,8 +52,10 @@ function App() {
     <BrowserRouter>
       <I18nProvider>
         <AuthProvider>
-          <AppRouter />
-          <Toaster position="top-right" theme="dark" toastOptions={{ style: { background: "#0A0A0F", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" } }} />
+          <SearchProvider>
+            <AppRouter />
+            <Toaster position="top-right" theme="dark" toastOptions={{ style: { background: "#0A0A0F", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" } }} />
+          </SearchProvider>
         </AuthProvider>
       </I18nProvider>
     </BrowserRouter>

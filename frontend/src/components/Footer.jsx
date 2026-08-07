@@ -1,17 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Zap } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 export const Footer = () => (
   <footer className="border-t border-white/10 mt-24 relative z-10" data-testid="footer">
     <div className="max-w-[1400px] mx-auto px-5 md:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-10">
       <div className="md:col-span-2">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-7 h-7 rounded-lg bg-[#00F0FF] flex items-center justify-center">
-            <Zap className="w-4 h-4 text-black" strokeWidth={2.5} />
-          </div>
-          <span className="font-display font-700 tracking-tight">SENTIENT<span className="text-[#00F0FF]">-AI</span></span>
-        </div>
+        <Logo height={26} className="mb-4" />
         <p className="text-white/50 text-sm max-w-md leading-relaxed">
           Hub digital para centralizar produtos, automações, templates, skills e ferramentas de IA. Descubra, acesse e escale.
         </p>

@@ -333,10 +333,12 @@ async def list_products(category: Optional[str] = None, type: Optional[str] = No
 
 @api_router.get("/products/{product_id}")
 async def get_product(product_id: str):
-    p = await db.products.find_one({"id": product_id}, {"_id": 0})
+    from pymongo import ReturnDocument
+    p = await db.products.find_one_and_update(
+        {"id": product_id}, {"$inc": {"views": 1}},
+        projection={"_id": 0}, return_document=ReturnDocument.AFTER)
     if not p:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
-    await db.products.update_one({"id": product_id}, {"$inc": {"views": 1}})
     return p
 
 
@@ -677,6 +679,28 @@ async def maybe_send_lead_notifications(lead: dict, product: Optional[dict]):
             logger.error(f"Twilio error: {e}")
     else:
         logger.info(f"[WHATSAPP inativo] lead {lead.get('phone')} para {title}")
+
+
+# ---------------------------------------------------------------------------
+# Unified search (command palette)
+# ---------------------------------------------------------------------------
+@api_router.get("/search")
+async def unified_search(q: Optional[str] = None):
+    if not q or not q.strip():
+        cats = await db.categories.find({}, {"_id": 0}).to_list(20)
+        popular = await db.products.find({}, {"_id": 0}).sort("views", -1).to_list(5)
+        return {"products": [], "skills": [], "faqs": [], "categories": cats, "popular": popular}
+    rx = {"$regex": q.strip(), "$options": "i"}
+    products = await db.products.find(
+        {"$or": [{"title": rx}, {"short_description": rx}, {"tags": rx}, {"category_name": rx}]},
+        {"_id": 0}).limit(6).to_list(6)
+    skills = await db.skills.find(
+        {"$or": [{"title": rx}, {"description": rx}, {"category": rx}]},
+        {"_id": 0}).limit(5).to_list(5)
+    faqs = await db.faqs.find(
+        {"$or": [{"question": rx}, {"answer": rx}]},
+        {"_id": 0}).limit(4).to_list(4)
+    return {"products": products, "skills": skills, "faqs": faqs, "categories": [], "popular": []}
 
 
 @api_router.get("/")
