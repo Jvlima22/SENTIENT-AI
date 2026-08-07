@@ -1,0 +1,150 @@
+{
+  "theme": "Dark Theme (Archetype: Electric & Neon, Deep Void Black Base)",
+  "typography": {
+    "headings": {
+      "font": "Unbounded",
+      "style": "Variable weight (300 for elegant, 800 for impact), tracking-tight",
+      "usage": "Marketplace Heroes, Product Titles, Marketing Pages"
+    },
+    "body": {
+      "font": "IBM Plex Sans",
+      "style": "Clean, highly readable, neutral",
+      "usage": "Dashboard data, product descriptions, UI elements"
+    },
+    "code": {
+      "font": "JetBrains Mono",
+      "style": "Crisp monospace",
+      "usage": "Claude skills, commands, API endpoints, badges"
+    }
+  },
+  "colors": {
+    "background": {
+      "primary": "#030303", 
+      "secondary": "#0A0A0F",
+      "tertiary": "#12121A"
+    },
+    "surface": {
+      "default": "#0F0F13",
+      "hover": "#171721",
+      "border": "rgba(255, 255, 255, 0.08)"
+    },
+    "accent": {
+      "primary": "#00F0FF",
+      "success": "#22C55E",
+      "premium": "#FFF000",
+      "warning": "#FFB800",
+      "danger": "#FF3B30"
+    },
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "rgba(255, 255, 255, 0.65)",
+      "muted": "rgba(255, 255, 255, 0.4)"
+    }
+  },
+  "visual_enhancers": {
+    "shadows": {
+      "ambient": "0 8px 32px rgba(0, 240, 255, 0.05)",
+      "glowing_premium": "0 0 24px rgba(255, 240, 0, 0.2)"
+    },
+    "surfaces": {
+      "glass": "backdrop-blur-xl bg-white/5 border border-white/10",
+      "neon_border": "mask-image to create tracing glowing borders on premium cards"
+    },
+    "textures": {
+      "noise": "Subtle SVG noise overlay fixed on background for tactile feel"
+    }
+  },
+  "layouts": {
+    "marketplace": {
+      "grid": "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6",
+      "spacing": "Generous (p-8 to p-12 for sections)"
+    },
+    "dashboard": {
+      "pattern": "Master-Detail (Sidebar navigation + dense data views)",
+      "grid": "Dense grids, gap-4",
+      "spacing": "Tight, utilizing all screen real estate"
+    },
+    "product_detail": {
+      "layout": "Split-pane: sticky media/checkout on right, deep details on left"
+    }
+  },
+  "components": {
+    "product_card": {
+      "base": "Flat dark background, 1px subtle white/10 border. p-4.",
+      "thumbnail": "aspect-video rounded-md overflow-hidden bg-white/5",
+      "free_badge": "border border-white/20 text-white/60 bg-transparent text-xs rounded-full px-2 py-1",
+      "paid_badge": "bg-[#FFF000] text-black font-bold text-xs rounded-full px-2 py-1 shadow-[0_0_10px_rgba(255,240,0,0.3)]",
+      "hover": "-translate-y-1 transition-transform border-white/20"
+    },
+    "skill_card": {
+      "base": "Monospace typography focused. Terminal look. bg-[#0A0A0F] border border-white/10",
+      "action": "Copy-to-clipboard button appears on hover with neon cyan text"
+    },
+    "ai_chat_widget": {
+      "base": "Floating bottom right. Glassmorphism panel with glowing cyan tracing border.",
+      "avatar": "Abstract AI node image."
+    },
+    "navigation": {
+      "base": "Sticky top, Crystal Glass (backdrop-blur-xl bg-black/60). NEVER transparent.",
+      "links": "Hover state: text-[#00F0FF] transition-colors"
+    },
+    "buttons": {
+      "primary": "bg-[#00F0FF] text-black font-medium hover:bg-white hover:text-black transition-all",
+      "premium": "bg-[#FFF000] text-black font-bold hover:brightness-110 shadow-lg shadow-yellow-500/20"
+    }
+  },
+  "motion": {
+    "hover": "transform -translate-y-1, border color transition, shadow glow",
+    "page_load": "staggered fade-up for grid items",
+    "interactive": "Subtle scale-down on active (press) state"
+  },
+  "image_urls": {
+    "hero_background": {
+      "url": "https://images.unsplash.com/photo-1544380904-c686aad2fc40?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHw0fHxhYnN0cmFjdCUyMGRhcmslMjB0ZWNobm9sb2d5JTIwbmV0d29yayUyMG5lb258ZW58MHx8fHwxNzg1MTk5Mjg1fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Abstract 3D network architecture, used for marketplace hero or AI widget header."
+    },
+    "premium_accent": {
+      "url": "https://images.unsplash.com/photo-1626908013351-800ddd734b8a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMGRhcmslMjB0ZWNobm9sb2d5JTIwbmV0d29yayUyMG5lb258ZW58MHx8fHwxNzg1MTk5Mjg1fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Black and red/yellow light, used for premium product placeholders."
+    },
+    "ai_node": {
+      "url": "https://images.unsplash.com/photo-1674027444485-cec3da58eef4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjV8MHwxfHNlYXJjaHwxfHxmdXR1cmlzdGljJTIwZ2xvd2luZyUyMGFydGlmaWNpYWwlMjBpbnRlbGxpZ2VuY2V8ZW58MHx8fHwxNzgzNTk5MjQyfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Futuristic AI sphere dot grid, used for AI Chat assistant avatars or empty states."
+    }
+  },
+  "accessibility": {
+    "contrast": "Ensure all text against deep backgrounds meets WCAG AA using APCA. Avoid pure #000000.",
+    "focus": "focus:ring-2 focus:ring-[#00F0FF] focus:outline-none focus:ring-offset-2 focus:ring-offset-[#030303]",
+    "testing": "All interactive and key informational elements MUST include a data-testid attribute in kebab-case."
+  },
+  "instructions_to_main_agent": [
+    "Install required fonts from Google Fonts: Unbounded, IBM Plex Sans, JetBrains Mono.",
+    "Install Phosphor Icons: yarn add @phosphor-icons/react for high-end tech aesthetic.",
+    "Do NOT use HTML-based components for advanced interactions. Use Shadcn components and deeply customize them to match the Dark Tech aesthetic.",
+    "Do NOT apply transition: all. Target specific properties like transition-colors or transition-transform.",
+    "Use Lucide-React for standard UI icons, Phosphor for premium/dashboard dense icons.",
+    "For the Marketplace, use generous spacing (p-8 to p-12). For the Admin Dashboard, use tight, dense spacing (p-4).",
+    "Never use purely transparent headers. Always apply glassmorphism (backdrop-blur-xl bg-black/60).",
+    "Use sonner for all toast notifications. Override its dark mode colors to match our theme.",
+    "The UI is PT-BR with EN support. Ensure UI text has room for translation expansion."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. In frontend design, this creates what users call the 'AI slop' aesthetic. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transition. Eg: transition: all. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms.",
+    "You MUST NOT center align the app container, ie do not add .App { text-align: center; } in the css file. This disrupts the human natural reading flow of text.",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style.",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯 etc for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
+    "Main agent relies on these image URLs. Missing categories (especially sponsor logos) = main agent will use placeholder text which is FORBIDDEN.",
+    "Prioritize using pre-existing components from src/components/ui when applicable.",
+    "Create new components that match the style and conventions of existing components when needed.",
+    "Use 'sonner' for toasts. Sonner component are located in /app/src/components/ui/sonner.tsx.",
+    "All interactive and key informational elements MUST include a data-testid attribute to facilitate robust automated testing."
+  ]
+}
