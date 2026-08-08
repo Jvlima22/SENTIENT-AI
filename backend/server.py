@@ -35,7 +35,7 @@ app = FastAPI(title="SENTIENT-AI Hub")
 api_router = APIRouter(prefix="/api")
 
 JWT_ALGORITHM = "HS256"
-EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", os.environ.get("EMERGENT_LLM_KEY", ""))
 
 
 # ---------------------------------------------------------------------------
@@ -573,7 +573,7 @@ SYSTEM_ASSISTANT = (
 
 @api_router.post("/ai/chat")
 async def ai_chat(data: ChatInput):
-    from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
+    import anthropic as _anthropic
     session_id = data.session_id or new_id()
     catalog = await build_catalog_context()
     # persist user message
@@ -581,16 +581,18 @@ async def ai_chat(data: ChatInput):
                                        "role": "user", "content": data.message, "created_at": now_iso()})
 
     async def event_generator():
-        chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=session_id,
-                       system_message=SYSTEM_ASSISTANT.format(catalog=catalog)).with_model("anthropic", "claude-sonnet-4-6")
+        client_ai = _anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
         full = ""
         try:
-            async for event in chat.stream_message(UserMessage(text=data.message)):
-                if isinstance(event, TextDelta):
-                    full += event.content
-                    yield event.content
-                elif isinstance(event, StreamDone):
-                    break
+            async with client_ai.messages.stream(
+                model="claude-sonnet-4-5",
+                max_tokens=1024,
+                system=SYSTEM_ASSISTANT.format(catalog=catalog),
+                messages=[{"role": "user", "content": data.message}],
+            ) as stream:
+                async for text in stream.text_stream:
+                    full += text
+                    yield text
         except Exception as e:
             logger.error(f"AI chat error: {e}")
             yield "Desculpe, tive um problema para responder agora. Tente novamente."
@@ -604,20 +606,25 @@ async def ai_chat(data: ChatInput):
 
 @api_router.post("/ai/recommend")
 async def ai_recommend(data: RecommendInput):
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    import anthropic as _anthropic
     products = await db.products.find({}, {"_id": 0}).to_list(100)
     if not products:
         return {"recommendations": [], "reasoning": "Catálogo vazio."}
     catalog = "\n".join([f"ID:{p['id']} | {p['title']} | {p.get('category_name','')} | "
                          f"{p.get('type')} | {p.get('short_description','')}" for p in products])
-    sys = ("Você é um motor de recomendação do SENTIENT-AI. Dado o interesse do usuário e o catálogo, "
-           "escolha até 4 produtos mais relevantes. Responda APENAS com IDs separados por vírgula, "
-           "na ordem de relevância. Sem texto extra.")
-    chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=new_id(),
-                   system_message=sys).with_model("anthropic", "claude-sonnet-4-6")
+    sys_msg = ("Você é um motor de recomendação do SENTIENT-AI. Dado o interesse do usuário e o catálogo, "
+               "escolha até 4 produtos mais relevantes. Responda APENAS com IDs separados por vírgula, "
+               "na ordem de relevância. Sem texto extra.")
+    client_ai = _anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
     try:
-        resp = await chat.send_message(UserMessage(text=f"Interesse: {data.query}\n\nCATÁLOGO:\n{catalog}"))
-        ids = [i.strip() for i in str(resp).replace("\n", ",").split(",") if i.strip().startswith(("ID:", "")) ]
+        resp = await client_ai.messages.create(
+            model="claude-sonnet-4-5",
+            max_tokens=256,
+            system=sys_msg,
+            messages=[{"role": "user", "content": f"Interesse: {data.query}\n\nCATÁLOGO:\n{catalog}"}],
+        )
+        raw = resp.content[0].text if resp.content else ""
+        ids = [i.strip() for i in raw.replace("\n", ",").split(",") if i.strip()]
         clean_ids = [i.replace("ID:", "").strip() for i in ids]
         by_id = {p["id"]: p for p in products}
         recs = [by_id[i] for i in clean_ids if i in by_id][:4]
