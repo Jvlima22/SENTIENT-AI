@@ -89,7 +89,7 @@ export const CommandPalette = () => {
                 placeholder="Buscar produtos, skills, categorias..." data-testid="command-input"
                 className="flex-1 bg-transparent text-base outline-none placeholder:text-white/30" />
               <button onClick={runAI} disabled={!q.trim()} data-testid="command-ai-btn"
-                className="hidden sm:flex items-center gap-1.5 text-xs bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30 rounded-full px-3 py-1.5 hover:bg-[#00F0FF]/20 transition-colors disabled:opacity-40">
+                className="hidden sm:flex items-center gap-1.5 text-xs bg-[#FF7A59]/10 text-[#FF7A59] border border-[#FF7A59]/30 rounded-full px-3 py-1.5 hover:bg-[#FF7A59]/20 transition-colors disabled:opacity-40">
                 <Sparkles className="w-3.5 h-3.5" /> Perguntar à IA
               </button>
               <button onClick={() => setOpen(false)} className="text-white/40 hover:text-white transition-colors sm:hidden"><X className="w-5 h-5" /></button>
@@ -101,20 +101,20 @@ export const CommandPalette = () => {
                 <div data-testid="command-ai-results">
                   <SectionLabel icon={Sparkles}>Recomendações da IA</SectionLabel>
                   {aiLoading ? (
-                    <div className="flex items-center gap-2 px-3 py-6 text-white/50 text-sm"><Loader2 className="w-4 h-4 animate-spin text-[#00F0FF]" /> Analisando o catálogo...</div>
+                    <div className="flex items-center gap-2 px-3 py-6 text-white/50 text-sm"><Loader2 className="w-4 h-4 animate-spin text-[#FF7A59]" /> Analisando o catálogo...</div>
                   ) : (
                     (aiRecs || []).map((p) => <ProductRow key={p.id} p={p} onClick={() => go(`/produto/${p.id}`)} />)
                   )}
                 </div>
               ) : loading && !hasResults ? (
-                <div className="flex items-center gap-2 px-3 py-6 text-white/50 text-sm"><Loader2 className="w-4 h-4 animate-spin text-[#00F0FF]" /> Buscando...</div>
+                <div className="flex items-center gap-2 px-3 py-6 text-white/50 text-sm"><Loader2 className="w-4 h-4 animate-spin text-[#FF7A59]" /> Buscando...</div>
               ) : !q ? (
                 <div>
                   <SectionLabel>Categorias</SectionLabel>
                   <div className="flex flex-wrap gap-2 px-3 pb-3">
                     {data.categories.map((c) => (
                       <button key={c.id} onClick={() => go(`/?cat=${c.id}`)} data-testid={`command-cat-${c.slug}`}
-                        className="text-sm border border-white/12 text-white/70 rounded-full px-3.5 py-1.5 hover:border-[#00F0FF]/50 hover:text-[#00F0FF] transition-colors">
+                        className="text-sm border border-white/12 text-white/70 rounded-full px-3.5 py-1.5 hover:border-[#FF7A59]/50 hover:text-[#FF7A59] transition-colors">
                         {c.name}
                       </button>
                     ))}
@@ -125,7 +125,7 @@ export const CommandPalette = () => {
               ) : !hasResults ? (
                 <div className="px-3 py-8 text-center text-white/40 text-sm">
                   Nada encontrado para "<span className="text-white/70">{q}</span>".
-                  <button onClick={runAI} className="block mx-auto mt-3 text-[#00F0FF] hover:underline flex items-center gap-1.5 justify-center">
+                  <button onClick={runAI} className="block mx-auto mt-3 text-[#FF7A59] hover:underline flex items-center gap-1.5 justify-center">
                     <Sparkles className="w-4 h-4" /> Perguntar à IA
                   </button>
                 </div>
@@ -139,14 +139,14 @@ export const CommandPalette = () => {
                     <><SectionLabel icon={Terminal}>Skills Claude</SectionLabel>
                       {data.skills.map((s) => (
                         <Row key={s.id} onClick={() => go("/skills")} testid={`command-skill-${s.id}`}
-                          icon={<Terminal className="w-4 h-4 text-[#00F0FF]" />} title={s.title} sub={s.category} />
+                          icon={<Terminal className="w-4 h-4 text-[#FF7A59]" />} title={s.title} sub={s.category} />
                       ))}</>
                   )}
                   {data.faqs.length > 0 && (
                     <><SectionLabel icon={HelpCircle}>FAQ</SectionLabel>
                       {data.faqs.map((f) => (
                         <Row key={f.id} onClick={() => go("/faq")} testid={`command-faq-${f.id}`}
-                          icon={<HelpCircle className="w-4 h-4 text-[#00F0FF]" />} title={f.question} sub={f.category} />
+                          icon={<HelpCircle className="w-4 h-4 text-[#FF7A59]" />} title={f.question} sub={f.category} />
                       ))}</>
                   )}
                 </div>
@@ -180,7 +180,7 @@ const Row = ({ icon, title, sub, onClick, testid, right }) => (
       {sub && <p className="text-xs text-white/40 truncate font-mono-code">{sub}</p>}
     </div>
     {right}
-    <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-[#00F0FF] transition-colors shrink-0" />
+    <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-[#FF7A59] transition-colors shrink-0" />
   </button>
 );
 
@@ -195,6 +195,6 @@ const ProductRow = ({ p, onClick }) => (
     {p.type === "free"
       ? <span className="text-[10px] border border-white/20 text-white/60 rounded-full px-2 py-0.5 font-mono-code shrink-0">Grátis</span>
       : <span className="text-[10px] bg-[#FFF000] text-black font-bold rounded-full px-2 py-0.5 font-mono-code shrink-0">R$ {p.price}</span>}
-    <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-[#00F0FF] transition-colors shrink-0" />
+    <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-[#FF7A59] transition-colors shrink-0" />
   </button>
 );

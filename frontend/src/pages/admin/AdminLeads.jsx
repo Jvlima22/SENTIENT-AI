@@ -5,7 +5,7 @@ import { Trash2, Loader2, Mail, Phone } from "lucide-react";
 
 const STATUS = ["new", "contacted", "converted", "lost"];
 const LABEL = { new: "Novo", contacted: "Contactado", converted: "Convertido", lost: "Perdido" };
-const COLOR = { new: "text-[#00F0FF]", contacted: "text-[#FFB800]", converted: "text-[#22C55E]", lost: "text-white/40" };
+const COLOR = { new: "text-[#FF7A59]", contacted: "text-[#FFB800]", converted: "text-[#22C55E]", lost: "text-white/40" };
 
 export default function AdminLeads() {
   const [leads, setLeads] = useState([]);
@@ -21,7 +21,7 @@ export default function AdminLeads() {
       <h1 className="font-display text-2xl mb-1">Leads</h1>
       <p className="text-white/50 text-sm mb-6">{leads.length} leads capturados</p>
 
-      {loading ? <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-[#00F0FF] animate-spin" /></div> : leads.length === 0 ? (
+      {loading ? <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-[#FF7A59] animate-spin" /></div> : leads.length === 0 ? (
         <p className="text-white/40 py-16 text-center">Nenhum lead capturado ainda.</p>
       ) : (
         <div className="rounded-xl border border-white/10 overflow-x-auto" data-testid="leads-table">

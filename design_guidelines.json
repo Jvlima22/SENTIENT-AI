@@ -29,7 +29,7 @@
       "border": "rgba(255, 255, 255, 0.08)"
     },
     "accent": {
-      "primary": "#00F0FF",
+      "primary": "#FF7A59",
       "success": "#22C55E",
       "premium": "#FFF000",
       "warning": "#FFB800",
@@ -86,10 +86,10 @@
     },
     "navigation": {
       "base": "Sticky top, Crystal Glass (backdrop-blur-xl bg-black/60). NEVER transparent.",
-      "links": "Hover state: text-[#00F0FF] transition-colors"
+      "links": "Hover state: text-[#FF7A59] transition-colors"
     },
     "buttons": {
-      "primary": "bg-[#00F0FF] text-black font-medium hover:bg-white hover:text-black transition-all",
+      "primary": "bg-[#FF7A59] text-black font-medium hover:bg-white hover:text-black transition-all",
       "premium": "bg-[#FFF000] text-black font-bold hover:brightness-110 shadow-lg shadow-yellow-500/20"
     }
   },
@@ -114,7 +114,7 @@
   },
   "accessibility": {
     "contrast": "Ensure all text against deep backgrounds meets WCAG AA using APCA. Avoid pure #000000.",
-    "focus": "focus:ring-2 focus:ring-[#00F0FF] focus:outline-none focus:ring-offset-2 focus:ring-offset-[#030303]",
+    "focus": "focus:ring-2 focus:ring-[#FF7A59] focus:outline-none focus:ring-offset-2 focus:ring-offset-[#030303]",
     "testing": "All interactive and key informational elements MUST include a data-testid attribute in kebab-case."
   },
   "instructions_to_main_agent": [

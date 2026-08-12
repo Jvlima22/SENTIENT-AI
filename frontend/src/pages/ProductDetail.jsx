@@ -55,20 +55,20 @@ export default function ProductDetail() {
   };
 
   if (loading || !product)
-    return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#00F0FF] animate-spin" /></div>;
+    return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#FF7A59] animate-spin" /></div>;
 
   const isFree = product.type === "free";
 
   return (
     <div className="max-w-[1400px] mx-auto px-5 md:px-8 py-10">
-      <Link to="/" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-[#00F0FF] mb-8 transition-colors" data-testid="back-link">
+      <Link to="/" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-[#FF7A59] mb-8 transition-colors" data-testid="back-link">
         <ArrowLeft className="w-4 h-4" /> Voltar ao marketplace
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
         <div className="lg:col-span-3">
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-xs uppercase tracking-wide text-[#00F0FF] font-mono-code">{product.category_name}</span>
+            <span className="text-xs uppercase tracking-wide text-[#FF7A59] font-mono-code">{product.category_name}</span>
             {isFree ? (
               <span className="border border-white/25 text-white/70 text-xs rounded-full px-2.5 py-1 font-mono-code">{t("free")}</span>
             ) : (
@@ -107,7 +107,7 @@ export default function ProductDetail() {
                   </a>
                 ) : (
                   <button onClick={handleFree} data-testid="get-free-btn"
-                    className="w-full bg-[#00F0FF] text-black font-medium px-6 py-3.5 rounded-full flex items-center justify-center gap-2 hover:bg-white transition-colors">
+                    className="w-full bg-[#FF7A59] text-black font-medium px-6 py-3.5 rounded-full flex items-center justify-center gap-2 hover:bg-white transition-colors">
                     <Download className="w-5 h-5" /> {t("get_free")}
                   </button>
                 )}
@@ -124,7 +124,7 @@ export default function ProductDetail() {
             )}
             <div className="mt-6 space-y-3 text-sm text-white/60">
               {["Acesso imediato após confirmação", "Salvo em Minha Conta", "Suporte pela comunidade"].map((f) => (
-                <div key={f} className="flex items-center gap-2"><Check className="w-4 h-4 text-[#00F0FF]" /> {f}</div>
+                <div key={f} className="flex items-center gap-2"><Check className="w-4 h-4 text-[#FF7A59]" /> {f}</div>
               ))}
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function ProductDetail() {
             <Field label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} testid="lead-email" type="email" />
             <Field label="WhatsApp (opcional)" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} testid="lead-phone" placeholder="+55 11 99999-9999" />
             <button onClick={submitLead} disabled={submitting || !form.name || !form.email} data-testid="lead-submit"
-              className="w-full bg-[#00F0FF] text-black font-medium px-6 py-3 rounded-full hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+              className="w-full bg-[#FF7A59] text-black font-medium px-6 py-3 rounded-full hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} Liberar acesso
             </button>
           </div>
@@ -156,6 +156,6 @@ const Field = ({ label, value, onChange, testid, type = "text", placeholder }) =
   <div>
     <label className="text-sm text-white/60 mb-1.5 block">{label}</label>
     <input type={type} value={value} onChange={(e) => onChange(e.target.value)} data-testid={testid} placeholder={placeholder}
-      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#00F0FF]/50 transition-colors" />
+      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50 transition-colors" />
   </div>
 );

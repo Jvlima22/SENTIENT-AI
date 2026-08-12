@@ -55,15 +55,15 @@ export const AIChatWidget = () => {
   return (
     <>
       <button onClick={() => setOpen(!open)} data-testid="ai-chat-toggle"
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#00F0FF] flex items-center justify-center cyan-glow hover:scale-105 transition-transform">
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#FF7A59] flex items-center justify-center cyan-glow hover:scale-105 transition-transform">
         {open ? <X className="w-6 h-6 text-black" /> : <MessageSquare className="w-6 h-6 text-black" />}
       </button>
 
       {open && (
         <div data-testid="ai-chat-panel"
-          className="fixed bottom-24 right-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] h-[520px] rounded-2xl glass cyan-glow flex flex-col overflow-hidden border border-[#00F0FF]/30">
+          className="fixed bottom-24 right-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] h-[520px] rounded-2xl glass cyan-glow flex flex-col overflow-hidden border border-[#FF7A59]/30">
           <div className="p-4 border-b border-white/10 flex items-center gap-3 bg-black/40">
-            <div className="w-9 h-9 rounded-full bg-[#00F0FF]/15 flex items-center justify-center overflow-hidden p-1.5">
+            <div className="w-9 h-9 rounded-full bg-[#FF7A59]/15 flex items-center justify-center overflow-hidden p-1.5">
               <img src="/logo-icon.png" alt="" className="w-full h-full object-contain select-none" draggable={false} />
             </div>
             <div>
@@ -76,7 +76,7 @@ export const AIChatWidget = () => {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`} data-testid={`chat-msg-${m.role}`}>
                 <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
-                  m.role === "user" ? "bg-[#00F0FF] text-black" : "bg-white/5 text-white/85 border border-white/10"}`}>
+                  m.role === "user" ? "bg-[#FF7A59] text-black" : "bg-white/5 text-white/85 border border-white/10"}`}>
                   {m.content || (loading && i === messages.length - 1 ? "..." : "")}
                 </div>
               </div>
@@ -87,9 +87,9 @@ export const AIChatWidget = () => {
             <input value={input} onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()} data-testid="chat-input"
               placeholder="Pergunte algo..." disabled={loading}
-              className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#00F0FF]/50 transition-colors" />
+              className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50 transition-colors" />
             <button onClick={send} disabled={loading} data-testid="chat-send"
-              className="w-10 h-10 rounded-full bg-[#00F0FF] flex items-center justify-center hover:bg-white transition-colors disabled:opacity-50">
+              className="w-10 h-10 rounded-full bg-[#FF7A59] flex items-center justify-center hover:bg-white transition-colors disabled:opacity-50">
               <Send className="w-4 h-4 text-black" />
             </button>
           </div>

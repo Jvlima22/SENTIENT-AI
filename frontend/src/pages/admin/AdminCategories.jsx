@@ -24,10 +24,10 @@ export default function AdminCategories() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div><h1 className="font-display text-2xl">Categorias</h1><p className="text-white/50 text-sm">{cats.length} categorias</p></div>
-        <button onClick={() => setOpen(true)} data-testid="new-category-btn" className="bg-[#00F0FF] text-black font-medium px-4 py-2.5 rounded-full hover:bg-white transition-colors flex items-center gap-2 text-sm"><Plus className="w-4 h-4" /> Nova</button>
+        <button onClick={() => setOpen(true)} data-testid="new-category-btn" className="bg-[#FF7A59] text-black font-medium px-4 py-2.5 rounded-full hover:bg-white transition-colors flex items-center gap-2 text-sm"><Plus className="w-4 h-4" /> Nova</button>
       </div>
 
-      {loading ? <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-[#00F0FF] animate-spin" /></div> : (
+      {loading ? <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-[#FF7A59] animate-spin" /></div> : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="categories-grid">
           {cats.map((c) => (
             <div key={c.id} className="rounded-xl bg-[#0F0F13] border border-white/10 p-5 flex items-start justify-between">
@@ -44,10 +44,10 @@ export default function AdminCategories() {
             <div className="flex items-center justify-between mb-5"><h2 className="font-display text-xl">Nova categoria</h2><button onClick={() => setOpen(false)}><X className="w-5 h-5 text-white/50" /></button></div>
             <div className="space-y-3">
               <div><label className="text-sm text-white/60 mb-1.5 block">Nome</label>
-                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} data-testid="cat-name" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#00F0FF]/50 transition-colors" /></div>
+                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} data-testid="cat-name" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50 transition-colors" /></div>
               <div><label className="text-sm text-white/60 mb-1.5 block">Descrição</label>
-                <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} data-testid="cat-desc" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#00F0FF]/50 transition-colors" /></div>
-              <button onClick={save} disabled={saving || !form.name} data-testid="save-category-btn" className="w-full bg-[#00F0FF] text-black font-medium px-6 py-3 rounded-full hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Salvar</button>
+                <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} data-testid="cat-desc" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50 transition-colors" /></div>
+              <button onClick={save} disabled={saving || !form.name} data-testid="save-category-btn" className="w-full bg-[#FF7A59] text-black font-medium px-6 py-3 rounded-full hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Salvar</button>
             </div>
           </div>
         </div>

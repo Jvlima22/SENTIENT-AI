@@ -22,7 +22,7 @@ export const ProductCard = ({ product, index = 0 }) => {
         </div>
       </div>
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-[11px] uppercase tracking-wide text-[#00F0FF]/80 font-mono-code">{product.category_name}</span>
+        <span className="text-[11px] uppercase tracking-wide text-[#FF7A59]/80 font-mono-code">{product.category_name}</span>
       </div>
       <h3 className="font-display text-base leading-snug mb-2 group-hover:text-white text-white/95">{product.title}</h3>
       <p className="text-sm text-white/50 line-clamp-2 mb-4 leading-relaxed">{product.short_description}</p>
@@ -31,7 +31,7 @@ export const ProductCard = ({ product, index = 0 }) => {
           <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" />{product.views || 0}</span>
           {isFree && <span className="flex items-center gap-1"><Download className="w-3.5 h-3.5" />{product.downloads || 0}</span>}
         </div>
-        <span className="flex items-center gap-1 text-sm text-white/70 group-hover:text-[#00F0FF] transition-colors">
+        <span className="flex items-center gap-1 text-sm text-white/70 group-hover:text-[#FF7A59] transition-colors">
           {t("view_details")} <ArrowUpRight className="w-4 h-4" />
         </span>
       </div>
