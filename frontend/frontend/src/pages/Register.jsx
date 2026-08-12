@@ -40,13 +40,13 @@ export default function Register() {
         <Input label="Email" type="email" value={email} onChange={setEmail} testid="register-email" />
         <Input label="Senha" type="password" value={password} onChange={setPassword} testid="register-password" />
         <button type="submit" disabled={loading} data-testid="register-submit"
-          className="w-full bg-[#00F0FF] text-black font-medium px-6 py-3 rounded-full hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
+          className="w-full bg-[#FF7A59] text-black font-medium px-6 py-3 rounded-full hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Criar conta
         </button>
       </form>
       <GoogleBtn onClick={googleLogin} />
       <p className="text-sm text-white/50 text-center mt-6">
-        Já tem conta? <Link to="/login" className="text-[#00F0FF] hover:underline">Entrar</Link>
+        Já tem conta? <Link to="/login" className="text-[#FF7A59] hover:underline">Entrar</Link>
       </p>
     </AuthShell>
   );

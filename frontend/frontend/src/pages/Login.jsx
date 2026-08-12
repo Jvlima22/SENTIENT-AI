@@ -40,13 +40,13 @@ export default function Login() {
         <Input label="Email" type="email" value={email} onChange={setEmail} testid="login-email" />
         <Input label="Senha" type="password" value={password} onChange={setPassword} testid="login-password" />
         <button type="submit" disabled={loading} data-testid="login-submit"
-          className="w-full bg-[#00F0FF] text-black font-medium px-6 py-3 rounded-full hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
+          className="w-full bg-[#FF7A59] text-black font-medium px-6 py-3 rounded-full hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Entrar
         </button>
       </form>
       <GoogleBtn onClick={googleLogin} />
       <p className="text-sm text-white/50 text-center mt-6">
-        Não tem conta? <Link to="/cadastro" className="text-[#00F0FF] hover:underline">Criar conta</Link>
+        Não tem conta? <Link to="/cadastro" className="text-[#FF7A59] hover:underline">Criar conta</Link>
       </p>
     </AuthShell>
   );
@@ -74,7 +74,7 @@ export function Input({ label, type = "text", value, onChange, testid }) {
     <div>
       <label className="text-sm text-white/60 mb-1.5 block">{label}</label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} data-testid={testid} required
-        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#00F0FF]/50 transition-colors" />
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50 transition-colors" />
     </div>
   );
 }

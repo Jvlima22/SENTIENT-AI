@@ -42,12 +42,12 @@ export default function AdminProducts() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div><h1 className="font-display text-2xl">Produtos</h1><p className="text-white/50 text-sm">{products.length} itens</p></div>
-        <button onClick={openNew} data-testid="new-product-btn" className="bg-[#00F0FF] text-black font-medium px-4 py-2.5 rounded-full hover:bg-white transition-colors flex items-center gap-2 text-sm">
+        <button onClick={openNew} data-testid="new-product-btn" className="bg-[#FF7A59] text-black font-medium px-4 py-2.5 rounded-full hover:bg-white transition-colors flex items-center gap-2 text-sm">
           <Plus className="w-4 h-4" /> Novo produto
         </button>
       </div>
 
-      {loading ? <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-[#00F0FF] animate-spin" /></div> : (
+      {loading ? <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-[#FF7A59] animate-spin" /></div> : (
         <div className="rounded-xl border border-white/10 overflow-hidden" data-testid="products-table">
           <table className="w-full text-sm">
             <thead className="bg-white/5 text-white/50 text-xs uppercase font-mono-code">
@@ -61,7 +61,7 @@ export default function AdminProducts() {
                   <td className="px-4 py-3">{p.type === "free" ? <span className="text-white/60 text-xs">Grátis</span> : <span className="text-[#FFF000] text-xs font-mono-code">R$ {p.price}</span>}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => openEdit(p)} data-testid={`edit-product-${p.id}`} className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-[#00F0FF] transition-colors"><Edit className="w-4 h-4" /></button>
+                      <button onClick={() => openEdit(p)} data-testid={`edit-product-${p.id}`} className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-[#FF7A59] transition-colors"><Edit className="w-4 h-4" /></button>
                       <button onClick={() => del(p.id)} data-testid={`delete-product-${p.id}`} className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-[#FF3B30] transition-colors"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </td>
@@ -85,13 +85,13 @@ export default function AdminProducts() {
               <div>
                 <label className="text-sm text-white/60 mb-1.5 block">Descrição completa</label>
                 <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} data-testid="prod-desc"
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#00F0FF]/50 transition-colors" />
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50 transition-colors" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm text-white/60 mb-1.5 block">Categoria</label>
                   <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })} data-testid="prod-cat"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#00F0FF]/50">
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50">
                     <option value="" className="bg-[#0A0A0F]">Selecione</option>
                     {categories.map((c) => <option key={c.id} value={c.id} className="bg-[#0A0A0F]">{c.name}</option>)}
                   </select>
@@ -99,7 +99,7 @@ export default function AdminProducts() {
                 <div>
                   <label className="text-sm text-white/60 mb-1.5 block">Tipo</label>
                   <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} data-testid="prod-type"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#00F0FF]/50">
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50">
                     <option value="free" className="bg-[#0A0A0F]">Grátis</option>
                     <option value="paid" className="bg-[#0A0A0F]">Pago</option>
                   </select>
@@ -116,10 +116,10 @@ export default function AdminProducts() {
               <F label="URL da Thumbnail" v={form.thumbnail} on={(v) => setForm({ ...form, thumbnail: v })} t="prod-thumb" />
               <F label="Tags (separadas por vírgula)" v={form.tags} on={(v) => setForm({ ...form, tags: v })} t="prod-tags" />
               <label className="flex items-center gap-2 text-sm text-white/70">
-                <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} data-testid="prod-featured" className="accent-[#00F0FF]" /> Destacar produto
+                <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} data-testid="prod-featured" className="accent-[#FF7A59]" /> Destacar produto
               </label>
               <button onClick={save} disabled={saving || !form.title} data-testid="save-product-btn"
-                className="w-full bg-[#00F0FF] text-black font-medium px-6 py-3 rounded-full hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-2">
+                className="w-full bg-[#FF7A59] text-black font-medium px-6 py-3 rounded-full hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-2">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Salvar
               </button>
             </div>
@@ -134,6 +134,6 @@ const F = ({ label, v, on, t, type = "text" }) => (
   <div>
     <label className="text-sm text-white/60 mb-1.5 block">{label}</label>
     <input type={type} value={v} onChange={(e) => on(e.target.value)} data-testid={t}
-      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#00F0FF]/50 transition-colors" />
+      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50 transition-colors" />
   </div>
 );

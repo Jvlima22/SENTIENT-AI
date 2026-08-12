@@ -34,8 +34,8 @@ export default function Skills() {
   return (
     <div className="max-w-[1400px] mx-auto px-5 md:px-8 py-12">
       <div className="flex items-center gap-2 mb-3">
-        <Terminal className="w-6 h-6 text-[#00F0FF]" />
-        <span className="text-xs uppercase tracking-wide text-[#00F0FF] font-mono-code">Prompt Library</span>
+        <Terminal className="w-6 h-6 text-[#FF7A59]" />
+        <span className="text-xs uppercase tracking-wide text-[#FF7A59] font-mono-code">Prompt Library</span>
       </div>
       <h1 className="font-display font-800 text-4xl md:text-5xl tracking-tight mb-4">{t("skills")}</h1>
       <p className="text-white/55 max-w-2xl mb-10 leading-relaxed">Comandos e prompts avançados prontos para usar com o Claude. Copie com um clique e turbine sua produtividade.</p>
@@ -44,7 +44,7 @@ export default function Skills() {
         <div className="relative w-full lg:w-96">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} data-testid="skills-search"
-            placeholder="Buscar skills..." className="w-full bg-white/5 border border-white/10 rounded-full pl-11 pr-4 py-2.5 text-sm outline-none focus:border-[#00F0FF]/50 transition-colors" />
+            placeholder="Buscar skills..." className="w-full bg-white/5 border border-white/10 rounded-full pl-11 pr-4 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50 transition-colors" />
         </div>
         <div className="flex flex-wrap gap-2">
           <Chip active={cat === "all"} onClick={() => setCat("all")}>{t("all")}</Chip>
@@ -53,20 +53,20 @@ export default function Skills() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-[#00F0FF] animate-spin" /></div>
+        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-[#FF7A59] animate-spin" /></div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5" data-testid="skills-grid">
           {skills.map((s, i) => (
-            <div key={s.id} data-testid={`skill-card-${s.id}`} className="grid-fade-in group rounded-xl bg-[#0A0A0F] border border-white/10 p-5 hover:border-[#00F0FF]/30 transition-colors"
+            <div key={s.id} data-testid={`skill-card-${s.id}`} className="grid-fade-in group rounded-xl bg-[#0A0A0F] border border-white/10 p-5 hover:border-[#FF7A59]/30 transition-colors"
               style={{ animationDelay: `${Math.min(i * 60, 400)}ms` }}>
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div>
-                  <span className="text-[11px] uppercase text-[#00F0FF]/70 font-mono-code tracking-wide">{s.category}</span>
+                  <span className="text-[11px] uppercase text-[#FF7A59]/70 font-mono-code tracking-wide">{s.category}</span>
                   <h3 className="font-display text-lg mt-1">{s.title}</h3>
                 </div>
                 <button onClick={() => copy(s)} data-testid={`skill-copy-${s.id}`}
-                  className="shrink-0 flex items-center gap-1.5 text-xs bg-white/5 border border-white/10 rounded-full px-3 py-1.5 hover:border-[#00F0FF]/50 hover:text-[#00F0FF] transition-colors">
-                  {copied === s.id ? <Check className="w-3.5 h-3.5 text-[#22C55E]" /> : <Copy className="w-3.5 h-3.5" />}
+                  className="shrink-0 flex items-center gap-1.5 text-xs bg-white/5 border border-white/10 rounded-full px-3 py-1.5 hover:border-[#FF7A59]/50 hover:text-[#FF7A59] transition-colors">
+                  {copied === s.id ? <Check className="w-3.5 h-3.5 text-[#FF7A59]" /> : <Copy className="w-3.5 h-3.5" />}
                   {copied === s.id ? t("copied") : t("copy")}
                 </button>
               </div>
@@ -81,5 +81,5 @@ export default function Skills() {
 }
 
 const Chip = ({ active, onClick, children }) => (
-  <button onClick={onClick} className={`text-sm px-4 py-1.5 rounded-full border transition-colors ${active ? "bg-[#00F0FF] text-black border-[#00F0FF]" : "border-white/15 text-white/60 hover:border-white/40"}`}>{children}</button>
+  <button onClick={onClick} className={`text-sm px-4 py-1.5 rounded-full border transition-colors ${active ? "bg-[#FF7A59] text-black border-[#FF7A59]" : "border-white/15 text-white/60 hover:border-white/40"}`}>{children}</button>
 );

@@ -8,7 +8,7 @@ export const ProtectedRoute = ({ children, adminOnly = false }) => {
   if (loading || user === null)
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#00F0FF] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#FF7A59] animate-spin" />
       </div>
     );
   if (!user) return <Navigate to="/login" replace />;

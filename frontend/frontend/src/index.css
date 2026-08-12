@@ -10,9 +10,9 @@
   --bg-tertiary: #12121A;
   --surface: #0F0F13;
   --surface-hover: #171721;
-  --accent-cyan: #00F0FF;
+  --accent-cyan: #FF7A59;
   --accent-yellow: #FFF000;
-  --accent-green: #22C55E;
+  --accent-green: #FF7A59;
 }
 
 @layer base {
@@ -23,7 +23,7 @@
     --card-foreground: 0 0% 100%;
     --popover: 240 16% 5%;
     --popover-foreground: 0 0% 100%;
-    --primary: 184 100% 50%;
+    --primary: 12 100% 67%;
     --primary-foreground: 0 0% 0%;
     --secondary: 240 10% 12%;
     --secondary-foreground: 0 0% 100%;
@@ -35,7 +35,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 100% / 0.08;
     --input: 240 10% 14%;
-    --ring: 184 100% 50%;
+    --ring: 12 100% 67%;
     --radius: 0.75rem;
   }
 }
@@ -81,7 +81,7 @@ body::before {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.neon-text { text-shadow: 0 0 20px rgba(0, 240, 255, 0.5); }
+.neon-text { text-shadow: 0 0 20px rgba(255, 122, 89, 0.5); }
 
 .grid-fade-in {
   animation: fadeUp 0.6s ease-out both;
@@ -92,7 +92,7 @@ body::before {
 }
 
 .premium-glow { box-shadow: 0 0 24px rgba(255, 240, 0, 0.18); }
-.cyan-glow { box-shadow: 0 0 24px rgba(0, 240, 255, 0.15); }
+.cyan-glow { box-shadow: 0 0 24px rgba(255, 122, 89, 0.15); }
 
 /* Immersive animated aurora orbs */
 .aurora {

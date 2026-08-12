@@ -35,7 +35,7 @@ export default function AuthCallback() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-      <Loader2 className="w-8 h-8 text-[#00F0FF] animate-spin" />
+      <Loader2 className="w-8 h-8 text-[#FF7A59] animate-spin" />
       <p className="text-white/50 text-sm">Autenticando...</p>
     </div>
   );

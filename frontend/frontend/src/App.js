@@ -7,6 +7,7 @@ import { I18nProvider } from "@/context/I18nContext";
 import { SearchProvider } from "@/context/SearchContext";
 import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 import Home from "@/pages/Home";
 import ProductDetail from "@/pages/ProductDetail";
@@ -28,6 +29,8 @@ function AppRouter() {
   if (location.hash?.includes("session_id=")) return <AuthCallback />;
 
   return (
+    <>
+    <ScrollToTop />
     <Routes>
       <Route path="/" element={<Layout><Home /></Layout>} />
       <Route path="/produto/:id" element={<Layout><ProductDetail /></Layout>} />
@@ -44,6 +47,7 @@ function AppRouter() {
         <Route path="leads" element={<AdminLeads />} />
       </Route>
     </Routes>
+    </>
   );
 }
 

@@ -14,18 +14,18 @@ export const Footer = () => (
       <div>
         <h4 className="font-display text-sm mb-4 text-white/90">Navegação</h4>
         <ul className="space-y-2 text-sm text-white/50">
-          <li><Link to="/" className="hover:text-[#00F0FF] transition-colors">Marketplace</Link></li>
-          <li><Link to="/skills" className="hover:text-[#00F0FF] transition-colors">Skills Claude</Link></li>
-          <li><Link to="/comunidade" className="hover:text-[#00F0FF] transition-colors">Comunidade</Link></li>
-          <li><Link to="/faq" className="hover:text-[#00F0FF] transition-colors">FAQ</Link></li>
+          <li><Link to="/" className="hover:text-[#FF7A59] transition-colors">Marketplace</Link></li>
+          <li><Link to="/skills" className="hover:text-[#FF7A59] transition-colors">Skills Claude</Link></li>
+          <li><Link to="/comunidade" className="hover:text-[#FF7A59] transition-colors">Comunidade</Link></li>
+          <li><Link to="/faq" className="hover:text-[#FF7A59] transition-colors">FAQ</Link></li>
         </ul>
       </div>
       <div>
         <h4 className="font-display text-sm mb-4 text-white/90">Conta</h4>
         <ul className="space-y-2 text-sm text-white/50">
-          <li><Link to="/login" className="hover:text-[#00F0FF] transition-colors">Entrar</Link></li>
-          <li><Link to="/cadastro" className="hover:text-[#00F0FF] transition-colors">Criar conta</Link></li>
-          <li><Link to="/conta" className="hover:text-[#00F0FF] transition-colors">Minha Conta</Link></li>
+          <li><Link to="/login" className="hover:text-[#FF7A59] transition-colors">Entrar</Link></li>
+          <li><Link to="/cadastro" className="hover:text-[#FF7A59] transition-colors">Criar conta</Link></li>
+          <li><Link to="/conta" className="hover:text-[#FF7A59] transition-colors">Minha Conta</Link></li>
         </ul>
       </div>
     </div>

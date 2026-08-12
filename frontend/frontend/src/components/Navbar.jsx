@@ -38,7 +38,7 @@ export const Navbar = () => {
         <nav className="hidden lg:flex items-center gap-8">
           {links.map((l) => (
             <Link key={l.to} to={l.to} data-testid={`nav-${l.to.replace("/", "") || "home"}`}
-              className={`text-sm transition-colors hover:text-[#00F0FF] ${isActive(l.to) ? "text-[#00F0FF]" : "text-white/65"}`}>
+              className={`text-sm transition-colors hover:text-[#FF7A59] ${isActive(l.to) ? "text-[#FF7A59]" : "text-white/65"}`}>
               {l.label}
             </Link>
           ))}
@@ -51,13 +51,13 @@ export const Navbar = () => {
             <Globe className="w-4 h-4" /> {lang}
           </button>
           {user && user.role === "admin" && (
-            <Link to="/admin" data-testid="nav-admin" className="flex items-center gap-1.5 text-sm text-white/65 hover:text-[#00F0FF] transition-colors">
+            <Link to="/admin" data-testid="nav-admin" className="flex items-center gap-1.5 text-sm text-white/65 hover:text-[#FF7A59] transition-colors">
               <LayoutDashboard className="w-4 h-4" /> {t("admin")}
             </Link>
           )}
           {user ? (
             <>
-              <Link to="/conta" data-testid="nav-account" className="flex items-center gap-1.5 text-sm text-white/80 hover:text-[#00F0FF] transition-colors">
+              <Link to="/conta" data-testid="nav-account" className="flex items-center gap-1.5 text-sm text-white/80 hover:text-[#FF7A59] transition-colors">
                 <User className="w-4 h-4" /> {user.name?.split(" ")[0]}
               </Link>
               <button onClick={async () => { await logout(); nav("/"); }} data-testid="logout-btn"
@@ -65,9 +65,9 @@ export const Navbar = () => {
             </>
           ) : (
             <>
-              <Link to="/login" data-testid="nav-login" className="text-sm text-white/80 hover:text-[#00F0FF] transition-colors">{t("login")}</Link>
+              <Link to="/login" data-testid="nav-login" className="text-sm text-white/80 hover:text-[#FF7A59] transition-colors">{t("login")}</Link>
               <Link to="/cadastro" data-testid="nav-register"
-                className="text-sm font-medium bg-[#00F0FF] text-black px-4 py-2 rounded-full hover:bg-white transition-colors">{t("register")}</Link>
+                className="text-sm font-medium bg-[#FF7A59] text-black px-4 py-2 rounded-full hover:bg-white transition-colors">{t("register")}</Link>
             </>
           )}
         </div>
@@ -81,7 +81,7 @@ export const Navbar = () => {
       {open && (
         <div className="md:hidden glass border-t border-white/10 px-5 py-4 flex flex-col gap-4" data-testid="mobile-menu">
           {links.map((l) => (
-            <Link key={l.to} to={l.to} onClick={() => setMenu(false)} className="text-white/80 hover:text-[#00F0FF]">{l.label}</Link>
+            <Link key={l.to} to={l.to} onClick={() => setMenu(false)} className="text-white/80 hover:text-[#FF7A59]">{l.label}</Link>
           ))}
           <div className="h-px bg-white/10" />
           {user ? (
@@ -93,7 +93,7 @@ export const Navbar = () => {
           ) : (
             <>
               <Link to="/login" onClick={() => setMenu(false)} className="text-white/80">{t("login")}</Link>
-              <Link to="/cadastro" onClick={() => setMenu(false)} className="text-[#00F0FF]">{t("register")}</Link>
+              <Link to="/cadastro" onClick={() => setMenu(false)} className="text-[#FF7A59]">{t("register")}</Link>
             </>
           )}
         </div>
