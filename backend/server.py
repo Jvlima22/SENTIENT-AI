@@ -19,20 +19,32 @@ from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depend
 from fastapi.responses import StreamingResponse
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+import certifi
 from pydantic import BaseModel, Field, EmailStr, BeforeValidator, ConfigDict
 
 # ---------------------------------------------------------------------------
 # DB & App setup
 # ---------------------------------------------------------------------------
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("sentient-ai")
 
+mongo_url = os.environ.get('MONGO_URL', '')
+db_name = os.environ.get('DB_NAME', 'sentient_ai')
+if not mongo_url:
+    logger.error("MONGO_URL não configurada — defina essa variável no painel da Vercel (Settings > Environment Variables).")
+client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where()) if mongo_url else None
+db = client[db_name] if client is not None else None
+
 app = FastAPI(title="SENTIENT-AI Hub")
-api_router = APIRouter(prefix="/api")
+
+
+async def require_db():
+    if db is None:
+        raise HTTPException(status_code=503,
+            detail="Banco de dados não configurado (MONGO_URL ausente). Configure as variáveis de ambiente na Vercel.")
+
+
+api_router = APIRouter(prefix="/api", dependencies=[Depends(require_db)])
 
 JWT_ALGORITHM = "HS256"
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", os.environ.get("EMERGENT_LLM_KEY", ""))
@@ -581,9 +593,15 @@ async def ai_chat(data: ChatInput):
                                        "role": "user", "content": data.message, "created_at": now_iso()})
 
     async def event_generator():
-        client_ai = _anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
         full = ""
+        if not ANTHROPIC_API_KEY:
+            msg = "O assistente de IA está temporariamente indisponível (chave não configurada)."
+            await db.chat_messages.insert_one({"id": new_id(), "session_id": session_id,
+                                               "role": "assistant", "content": msg, "created_at": now_iso()})
+            yield msg
+            return
         try:
+            client_ai = _anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
             async with client_ai.messages.stream(
                 model="claude-sonnet-4-5",
                 max_tokens=1024,
@@ -615,8 +633,10 @@ async def ai_recommend(data: RecommendInput):
     sys_msg = ("Você é um motor de recomendação do SENTIENT-AI. Dado o interesse do usuário e o catálogo, "
                "escolha até 4 produtos mais relevantes. Responda APENAS com IDs separados por vírgula, "
                "na ordem de relevância. Sem texto extra.")
-    client_ai = _anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
+    if not ANTHROPIC_API_KEY:
+        return {"recommendations": products[:4], "reasoning": "IA indisponível (chave não configurada)."}
     try:
+        client_ai = _anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
         resp = await client_ai.messages.create(
             model="claude-sonnet-4-5",
             max_tokens=256,
@@ -731,6 +751,16 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 @app.on_event("startup")
 async def startup():
+    if db is None:
+        logger.error("Startup ignorado: MONGO_URL não configurada. As rotas que usam o banco vão retornar erro 503.")
+        return
+    try:
+        await asyncio.wait_for(_run_startup_tasks(), timeout=8)
+    except Exception as e:
+        logger.error(f"Startup com banco falhou (app segue no ar, mas rotas de dados podem falhar): {e}")
+
+
+async def _run_startup_tasks():
     await db.users.create_index("email", unique=True)
     await db.users.create_index("user_id", unique=True)
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@sentient-ai.com").lower()
