@@ -72,7 +72,7 @@ export default function ProductDetail() {
             {isFree ? (
               <span className="border border-white/25 text-white/70 text-xs rounded-full px-2.5 py-1 font-mono-code">{t("free")}</span>
             ) : (
-              <span className="bg-[#FFF000] text-black font-bold text-xs rounded-full px-2.5 py-1 font-mono-code">R$ {product.price}</span>
+              <span className="bg-[#ff7a59] text-black font-bold text-xs rounded-full px-2.5 py-1 font-mono-code">R$ {product.price}</span>
             )}
           </div>
           <h1 className="font-display font-700 text-3xl md:text-4xl leading-tight tracking-tight mb-4" data-testid="product-title">{product.title}</h1>
@@ -117,7 +117,7 @@ export default function ProductDetail() {
                 <p className="text-3xl font-display font-700 mb-1">R$ {product.price}</p>
                 <p className="text-sm text-white/50 mb-6">Pagamento seguro via checkout externo.</p>
                 <button onClick={handleBuy} data-testid="buy-btn"
-                  className="w-full bg-[#FFF000] text-black font-bold px-6 py-3.5 rounded-full flex items-center justify-center gap-2 hover:brightness-110 transition-all premium-glow">
+                  className="w-full bg-[#ff7a59] text-black font-bold px-6 py-3.5 rounded-full flex items-center justify-center gap-2 hover:brightness-110 transition-all premium-glow">
                   <ShoppingCart className="w-5 h-5" /> {t("buy_now")} <ExternalLink className="w-4 h-4" />
                 </button>
               </>

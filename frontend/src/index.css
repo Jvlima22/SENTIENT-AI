@@ -11,7 +11,7 @@
   --surface: #0F0F13;
   --surface-hover: #171721;
   --accent-orange: #FF7A59;
-  --accent-yellow: #FFF000;
+  --accent-yellow: #ff7a59;
   --accent-green: #22C55E;
 }
 
@@ -156,3 +156,7 @@ body::before {
 @layer base {
   [data-debug-wrapper="true"] { display: contents !important; }
 }
+
+/* esconde a barra de rolagem da faixa de filtros/categorias no mobile, mantendo o scroll funcional */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

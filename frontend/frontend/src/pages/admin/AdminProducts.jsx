@@ -58,7 +58,7 @@ export default function AdminProducts() {
                 <tr key={p.id} className="border-t border-white/5 hover:bg-white/5">
                   <td className="px-4 py-3"><div className="flex items-center gap-3"><img src={p.thumbnail} alt="" className="w-10 h-10 rounded object-cover bg-white/5" /><span className="line-clamp-1">{p.title}</span></div></td>
                   <td className="px-4 py-3 text-white/50 hidden md:table-cell">{p.category_name}</td>
-                  <td className="px-4 py-3">{p.type === "free" ? <span className="text-white/60 text-xs">Grátis</span> : <span className="text-[#FFF000] text-xs font-mono-code">R$ {p.price}</span>}</td>
+                  <td className="px-4 py-3">{p.type === "free" ? <span className="text-white/60 text-xs">Grátis</span> : <span className="text-[#ff7a59] text-xs font-mono-code">R$ {p.price}</span>}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
                       <button onClick={() => openEdit(p)} data-testid={`edit-product-${p.id}`} className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-[#FF7A59] transition-colors"><Edit className="w-4 h-4" /></button>

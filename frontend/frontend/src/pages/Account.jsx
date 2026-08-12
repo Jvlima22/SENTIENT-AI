@@ -70,7 +70,7 @@ export default function Account() {
             <TabsContent value="purchases" data-testid="purchases-panel">
               {purchases.length === 0 ? <Empty text="Nenhuma compra registrada ainda." /> : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {purchases.map((p) => <HistoryRow key={p.id} item={p} action={<span className="text-[#FFF000] text-sm font-mono-code">R$ {p.price}</span>} />)}
+                  {purchases.map((p) => <HistoryRow key={p.id} item={p} action={<span className="text-[#ff7a59] text-sm font-mono-code">R$ {p.price}</span>} />)}
                 </div>
               )}
             </TabsContent>

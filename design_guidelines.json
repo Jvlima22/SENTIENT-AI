@@ -31,7 +31,7 @@
     "accent": {
       "primary": "#FF7A59",
       "success": "#22C55E",
-      "premium": "#FFF000",
+      "premium": "#ff7a59",
       "warning": "#FFB800",
       "danger": "#FF3B30"
     },
@@ -73,7 +73,7 @@
       "base": "Flat dark background, 1px subtle white/10 border. p-4.",
       "thumbnail": "aspect-video rounded-md overflow-hidden bg-white/5",
       "free_badge": "border border-white/20 text-white/60 bg-transparent text-xs rounded-full px-2 py-1",
-      "paid_badge": "bg-[#FFF000] text-black font-bold text-xs rounded-full px-2 py-1 shadow-[0_0_10px_rgba(255,240,0,0.3)]",
+      "paid_badge": "bg-[#ff7a59] text-black font-bold text-xs rounded-full px-2 py-1 shadow-[0_0_10px_rgba(255,240,0,0.3)]",
       "hover": "-translate-y-1 transition-transform border-white/20"
     },
     "skill_card": {
@@ -90,7 +90,7 @@
     },
     "buttons": {
       "primary": "bg-[#FF7A59] text-black font-medium hover:bg-white hover:text-black transition-all",
-      "premium": "bg-[#FFF000] text-black font-bold hover:brightness-110 shadow-lg shadow-yellow-500/20"
+      "premium": "bg-[#ff7a59] text-black font-bold hover:brightness-110 shadow-lg shadow-yellow-500/20"
     }
   },
   "motion": {

@@ -17,7 +17,7 @@ export const ProductCard = ({ product, index = 0 }) => {
           {isFree ? (
             <span className="border border-white/25 text-white/70 bg-black/50 backdrop-blur text-xs rounded-full px-2.5 py-1 font-mono-code">{t("free")}</span>
           ) : (
-            <span className="bg-[#FFF000] text-black font-bold text-xs rounded-full px-2.5 py-1 premium-glow font-mono-code">R$ {product.price}</span>
+            <span className="bg-[#ff7a59] text-black font-bold text-xs rounded-full px-2.5 py-1 premium-glow font-mono-code">R$ {product.price}</span>
           )}
         </div>
       </div>

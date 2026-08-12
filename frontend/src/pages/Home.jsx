@@ -5,7 +5,10 @@ import api from "@/lib/api";
 import { useI18n } from "@/context/I18nContext";
 import { useSearch } from "@/context/SearchContext";
 import { ProductCard } from "@/components/ProductCard";
-import { Search, Sparkles, ArrowRight, Loader2, Command, Terminal, BookOpen, Workflow, LayoutTemplate, Bot, Layers } from "lucide-react";
+import { Search, Sparkles, ArrowRight, Loader2, Command, Terminal, BookOpen, Workflow, LayoutTemplate, Bot, Layers, SlidersHorizontal } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 // Mapa de ícone + cor de destaque por categoria — casa por slug salvo (c.icon) e por
 // palavras-chave no nome, com fallback genérico para categorias novas/desconhecidas.
@@ -159,15 +162,35 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 mb-10">
+        <div className="flex items-center gap-2 mb-10 overflow-x-auto no-scrollbar -mx-5 px-5 md:-mx-8 md:px-8 lg:mx-0 lg:px-0 lg:flex-wrap">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button type="button" data-testid="filter-type-trigger" aria-label="Filtrar por tipo"
+                className={`flex items-center justify-center w-9 h-9 rounded-full border transition-colors flex-shrink-0 ${
+                  type !== "all" ? "bg-[#FF7A59] text-black border-[#FF7A59]" : "border-white/15 text-white/60 hover:border-white/40 hover:text-white"}`}>
+                <SlidersHorizontal className="w-4 h-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="bg-[#0F0F13] border-white/10 text-white min-w-[10rem]">
+              <DropdownMenuLabel className="text-white/50 text-xs font-mono-code uppercase tracking-wide">Tipo</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-white/10" />
+              <DropdownMenuCheckboxItem data-testid="filter-type-free" checked={type === "free"}
+                onCheckedChange={(checked) => setType(checked ? "free" : "all")}
+                className="focus:bg-white/10 focus:text-white">
+                {t("free")}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem data-testid="filter-type-paid" checked={type === "paid"}
+                onCheckedChange={(checked) => setType(checked ? "paid" : "all")}
+                className="focus:bg-white/10 focus:text-white">
+                {t("paid")}
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <span className="mx-1 w-px h-5 bg-white/10 flex-shrink-0" />
           <Chip active={cat === "all"} onClick={() => setCat("all")} testid="cat-all">{t("all")}</Chip>
           {categories.map((c) => (
             <Chip key={c.id} active={cat === c.id} onClick={() => setCat(c.id)} testid={`cat-${c.slug}`}>{c.name}</Chip>
           ))}
-          <span className="mx-2 w-px h-5 bg-white/10" />
-          <Chip active={type === "all"} onClick={() => setType("all")} testid="type-all">{t("all")}</Chip>
-          <Chip active={type === "free"} onClick={() => setType("free")} testid="type-free">{t("free")}</Chip>
-          <Chip active={type === "paid"} onClick={() => setType("paid")} testid="type-paid">{t("paid")}</Chip>
         </div>
 
         {loading ? (
@@ -186,7 +209,7 @@ export default function Home() {
 
 const Chip = ({ active, onClick, children, testid }) => (
   <button onClick={onClick} data-testid={`filter-${testid}`}
-    className={`text-sm px-4 py-1.5 rounded-full border transition-colors ${
+    className={`text-sm px-4 py-1.5 rounded-full border transition-colors flex-shrink-0 whitespace-nowrap ${
       active ? "bg-[#FF7A59] text-black border-[#FF7A59]" : "border-white/15 text-white/60 hover:border-white/40 hover:text-white"}`}>
     {children}
   </button>

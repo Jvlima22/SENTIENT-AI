@@ -194,7 +194,7 @@ const ProductRow = ({ p, onClick }) => (
     </div>
     {p.type === "free"
       ? <span className="text-[10px] border border-white/20 text-white/60 rounded-full px-2 py-0.5 font-mono-code shrink-0">Grátis</span>
-      : <span className="text-[10px] bg-[#FFF000] text-black font-bold rounded-full px-2 py-0.5 font-mono-code shrink-0">R$ {p.price}</span>}
+      : <span className="text-[10px] bg-[#ff7a59] text-black font-bold rounded-full px-2 py-0.5 font-mono-code shrink-0">R$ {p.price}</span>}
     <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-[#FF7A59] transition-colors shrink-0" />
   </button>
 );

@@ -63,7 +63,7 @@ export const AIChatWidget = () => {
         <div data-testid="ai-chat-panel"
           className="fixed bottom-24 right-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] h-[520px] rounded-2xl glass cyan-glow flex flex-col overflow-hidden border border-[#FF7A59]/30">
           <div className="p-4 border-b border-white/10 flex items-center gap-3 bg-black/40">
-            <div className="w-9 h-9 rounded-full bg-[#FF7A59]/15 flex items-center justify-center overflow-hidden p-1.5">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden p-1.5">
               <img src="/logo-icon.png" alt="" className="w-full h-full object-contain select-none" draggable={false} />
             </div>
             <div>
