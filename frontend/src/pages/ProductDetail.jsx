@@ -24,6 +24,8 @@ export default function ProductDetail() {
   useEffect(() => {
     api.get(`/products/${id}`).then((r) => { setProduct(r.data); setLoading(false); })
       .catch(() => { toast.error("Produto não encontrado"); nav("/"); });
+    // `nav` (useNavigate) mantém referência estável entre renders; recarregar apenas quando `id` muda.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, Sparkles } from "lucide-react";
+import { MessageSquare, X, Send } from "lucide-react";
 import { API } from "@/lib/api";
 
 export const AIChatWidget = () => {
@@ -63,8 +63,8 @@ export const AIChatWidget = () => {
         <div data-testid="ai-chat-panel"
           className="fixed bottom-24 right-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] h-[520px] rounded-2xl glass cyan-glow flex flex-col overflow-hidden border border-[#00F0FF]/30">
           <div className="p-4 border-b border-white/10 flex items-center gap-3 bg-black/40">
-            <div className="w-9 h-9 rounded-full bg-[#00F0FF]/15 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-[#00F0FF]" />
+            <div className="w-9 h-9 rounded-full bg-[#00F0FF]/15 flex items-center justify-center overflow-hidden p-1.5">
+              <img src="/logo-icon.png" alt="" className="w-full h-full object-contain select-none" draggable={false} />
             </div>
             <div>
               <p className="font-display text-sm">Assistente IA</p>

@@ -124,6 +124,24 @@ body::before {
 .marquee-track { animation: marquee 32s linear infinite; }
 .marquee-track:hover { animation-play-state: paused; }
 
+/* seamless badge marquee: edges fade to transparent, content duplicated exactly 2x so -50% loops perfectly */
+.marquee-wrap {
+  mask-image: linear-gradient(to right, transparent 0, black 64px, black calc(100% - 64px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 64px, black calc(100% - 64px), transparent 100%);
+}
+
+.badge-pill {
+  position: relative;
+  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s cubic-bezier(0.2,0.8,0.2,1), border-color 0.3s, background 0.3s, box-shadow 0.3s;
+}
+.badge-pill:hover {
+  transform: translateY(-3px) scale(1.03);
+  background: rgba(255, 255, 255, 0.07);
+}
+
 .hover-lift { transition: transform 0.35s cubic-bezier(0.2,0.8,0.2,1), border-color 0.35s, box-shadow 0.35s; }
 .hover-lift:hover { transform: translateY(-6px); }
 

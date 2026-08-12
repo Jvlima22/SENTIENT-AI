@@ -27,6 +27,10 @@ export default function AuthCallback() {
         nav("/login");
       }
     })();
+    // Executa apenas uma vez ao montar (guardado por `processed`), processando o hash
+    // de redirecionamento do OAuth. Incluir loc.hash/nav/setUser no array não muda o
+    // comportamento (a ref já impede reexecução) e pode mascarar o intuito "run once".
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

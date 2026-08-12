@@ -5,7 +5,22 @@ import api from "@/lib/api";
 import { useI18n } from "@/context/I18nContext";
 import { useSearch } from "@/context/SearchContext";
 import { ProductCard } from "@/components/ProductCard";
-import { Search, Sparkles, ArrowRight, Loader2, Zap, Command } from "lucide-react";
+import { Search, Sparkles, ArrowRight, Loader2, Command, Terminal, BookOpen, Workflow, LayoutTemplate, Bot, Layers } from "lucide-react";
+
+// Mapa de ícone + cor de destaque por categoria — casa por slug salvo (c.icon) e por
+// palavras-chave no nome, com fallback genérico para categorias novas/desconhecidas.
+const CATEGORY_STYLE = [
+  { match: /skill/i, icon: Terminal, color: "#00F0FF" },
+  { match: /curso|ebook/i, icon: BookOpen, color: "#7CC5FF" },
+  { match: /automa/i, icon: Workflow, color: "#57E5C4" },
+  { match: /template/i, icon: LayoutTemplate, color: "#A08CFF" },
+  { match: /ferramenta|ia\b|ai\b/i, icon: Bot, color: "#FF7A59" },
+];
+const getCategoryStyle = (c) => {
+  const key = `${c.icon || ""} ${c.name || ""}`;
+  const found = CATEGORY_STYLE.find((s) => s.match.test(key));
+  return found || { icon: Layers, color: "#00F0FF" };
+};
 
 export default function Home() {
   const { t } = useI18n();
@@ -86,15 +101,31 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* category marquee */}
+        {/* category marquee — loop infinito real: conteúdo duplicado exatamente 2x
+            para que translateX(-50%) feche perfeitamente sem "pulo" no reinício */}
         {categories.length > 0 && (
-          <div className="relative z-10 overflow-hidden border-t border-white/10 py-4">
+          <div className="relative z-10 border-t border-white/10 py-5 marquee-wrap overflow-hidden">
             <div className="flex gap-3 w-max marquee-track">
-              {[...categories, ...categories, ...categories].map((c, i) => (
-                <span key={i} className="flex items-center gap-2 text-sm text-white/50 border border-white/10 rounded-full px-4 py-1.5 whitespace-nowrap">
-                  <Zap className="w-3.5 h-3.5 text-[#00F0FF]" /> {c.name}
-                </span>
-              ))}
+              {[...categories, ...categories].map((c, i) => {
+                const { icon: Icon, color } = getCategoryStyle(c);
+                return (
+                  <span
+                    key={i}
+                    className="badge-pill flex items-center gap-2 text-sm text-white/70 rounded-full pl-3 pr-4 py-2 whitespace-nowrap"
+                    style={{ "--glow": `${color}33` }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${color}55`; e.currentTarget.style.boxShadow = `0 0 20px ${color}26`; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.boxShadow = ""; }}
+                  >
+                    <span
+                      className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: `${color}1F` }}
+                    >
+                      <Icon className="w-3.5 h-3.5" style={{ color }} strokeWidth={2.25} />
+                    </span>
+                    {c.name}
+                  </span>
+                );
+              })}
             </div>
           </div>
         )}

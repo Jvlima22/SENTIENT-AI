@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, formatApiError } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { Zap, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 export default function Login() {
   const { login } = useAuth();
@@ -55,11 +56,8 @@ export function AuthShell({ title, subtitle, children }) {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-5 py-12">
       <div className="w-full max-w-md">
-        <div className="flex items-center gap-2 justify-center mb-8">
-          <div className="w-9 h-9 rounded-lg bg-[#00F0FF] flex items-center justify-center cyan-glow">
-            <Zap className="w-5 h-5 text-black" strokeWidth={2.5} />
-          </div>
-          <span className="font-display font-700 text-xl">SENTIENT<span className="text-[#00F0FF]">-AI</span></span>
+        <div className="flex items-center justify-center mb-8">
+          <Logo height={32} />
         </div>
         <div className="rounded-2xl glass p-8 border border-white/10">
           <h1 className="font-display text-2xl mb-1">{title}</h1>
