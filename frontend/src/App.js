@@ -19,7 +19,7 @@ import Register from "@/pages/Register";
 import AuthCallback from "@/pages/AuthCallback";
 import Account from "@/pages/Account";
 import AdminLayout from "@/pages/admin/AdminLayout";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
+import ConnectionHub from "@/pages/admin/ConnectionHub";
 import AdminProducts from "@/pages/admin/AdminProducts";
 import AdminCategories from "@/pages/admin/AdminCategories";
 import AdminLeads from "@/pages/admin/AdminLeads";
@@ -40,12 +40,10 @@ function AppRouter() {
       <Route path="/login" element={<Login />} />
       <Route path="/cadastro" element={<Register />} />
       <Route path="/conta" element={<ProtectedRoute><Layout><Account /></Layout></ProtectedRoute>} />
-      <Route path="/admin" element={<ProtectedRoute adminOnly><Layout><AdminLayout /></Layout></ProtectedRoute>}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="produtos" element={<AdminProducts />} />
-        <Route path="categorias" element={<AdminCategories />} />
-        <Route path="leads" element={<AdminLeads />} />
-      </Route>
+      <Route path="/admin" element={<ProtectedRoute adminOnly><ConnectionHub /></ProtectedRoute>} />
+      <Route path="/admin/produtos" element={<ProtectedRoute adminOnly><Layout><AdminLayout><AdminProducts /></AdminLayout></Layout></ProtectedRoute>} />
+      <Route path="/admin/categorias" element={<ProtectedRoute adminOnly><Layout><AdminLayout><AdminCategories /></AdminLayout></Layout></ProtectedRoute>} />
+      <Route path="/admin/leads" element={<ProtectedRoute adminOnly><Layout><AdminLayout><AdminLeads /></AdminLayout></Layout></ProtectedRoute>} />
     </Routes>
     </>
   );

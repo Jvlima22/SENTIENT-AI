@@ -148,3 +148,224 @@ SEED_FAQS = [
     {"question": "Vocês oferecem reembolso?", "category": "Pagamento",
      "answer": "Sim, produtos pagos possuem garantia conforme descrito na página de checkout. Entre em contato com o suporte para solicitar."},
 ]
+
+
+# Árvore operacional do SENTIENT-AI. Estes registros pertencem ao hub administrativo
+# e são independentes do catálogo público de produtos.
+SEED_AUTOMATION_NODES = [
+    {
+        "id": "sentient-root",
+        "name": "SENTIENT-AI",
+        "type": "root",
+        "icon": "orbit",
+        "category": "Estrutural",
+        "color": "#94A3B8",
+        "status": "active",
+        "parent_id": None,
+        "order": 0,
+        "meta": {
+            "description": "Centro de comando para automações, agentes e conexões inteligentes.",
+        },
+    },
+    {
+        "id": "operations-hub",
+        "name": "Centro de Operações",
+        "type": "hub",
+        "icon": "network",
+        "category": "Estrutural",
+        "color": "#94A3B8",
+        "status": "active",
+        "parent_id": "sentient-root",
+        "order": 0,
+        "meta": {
+            "description": "Hub central que coordena os fluxos ativos da operação.",
+        },
+    },
+    {
+        "id": "communication",
+        "name": "Comunicação",
+        "type": "category",
+        "icon": "messages-square",
+        "category": "Comunicação",
+        "color": "#22D3EE",
+        "status": "active",
+        "parent_id": "operations-hub",
+        "order": 0,
+        "meta": {
+            "description": "Entradas, saídas e notificações de relacionamento.",
+        },
+    },
+    {
+        "id": "lead-qualification",
+        "name": "Qualificação de leads",
+        "type": "agent",
+        "icon": "sparkles",
+        "category": "Comunicação",
+        "color": "#22D3EE",
+        "status": "active",
+        "parent_id": "communication",
+        "order": 0,
+        "model": "Claude Sonnet",
+        "provider": "Anthropic",
+        "meta": {
+            "description": "Classifica novos leads e encaminha cada conversa para a próxima etapa.",
+        },
+    },
+    {
+        "id": "whatsapp-gateway",
+        "name": "WhatsApp Gateway",
+        "type": "tool",
+        "icon": "message-circle",
+        "category": "Comunicação",
+        "color": "#22D3EE",
+        "status": "active",
+        "parent_id": "communication",
+        "order": 1,
+        "provider": "Twilio API",
+        "meta": {
+            "description": "Canal de mensagens para atendimento e notificações.",
+        },
+    },
+    {
+        "id": "automation",
+        "name": "Automação",
+        "type": "category",
+        "icon": "workflow",
+        "category": "Automação",
+        "color": "#FB923C",
+        "status": "active",
+        "parent_id": "operations-hub",
+        "order": 1,
+        "meta": {
+            "description": "Orquestração de tarefas e rotinas recorrentes.",
+        },
+    },
+    {
+        "id": "content-pipeline",
+        "name": "Pipeline de conteúdo",
+        "type": "agent",
+        "icon": "bot",
+        "category": "Automação",
+        "color": "#FB923C",
+        "status": "waiting_approval",
+        "parent_id": "automation",
+        "order": 0,
+        "model": "GPT-4.1",
+        "provider": "OpenAI",
+        "meta": {
+            "description": "Gera, revisa e prepara conteúdo para aprovação antes da publicação.",
+        },
+    },
+    {
+        "id": "crm-sync",
+        "name": "Sincronização CRM",
+        "type": "agent",
+        "icon": "refresh-cw",
+        "category": "Automação",
+        "color": "#FB923C",
+        "status": "idle",
+        "parent_id": "automation",
+        "order": 1,
+        "model": "Claude Haiku",
+        "provider": "Anthropic",
+        "meta": {
+            "description": "Mantém contatos e eventos sincronizados com o CRM.",
+        },
+    },
+    {
+        "id": "intelligence",
+        "name": "IA / Agentes",
+        "type": "category",
+        "icon": "brain",
+        "category": "IA",
+        "color": "#A78BFA",
+        "status": "active",
+        "parent_id": "operations-hub",
+        "order": 2,
+        "meta": {
+            "description": "Agentes inteligentes e camadas de decisão da operação.",
+        },
+    },
+    {
+        "id": "support-agent",
+        "name": "Agente de suporte",
+        "type": "agent",
+        "icon": "headphones",
+        "category": "IA",
+        "color": "#A78BFA",
+        "status": "active",
+        "parent_id": "intelligence",
+        "order": 0,
+        "model": "Claude Sonnet",
+        "provider": "Anthropic",
+        "meta": {
+            "description": "Responde dúvidas e sugere recursos do catálogo em tempo real.",
+        },
+    },
+    {
+        "id": "data",
+        "name": "Dados",
+        "type": "category",
+        "icon": "database",
+        "category": "Dados",
+        "color": "#2DD4BF",
+        "status": "active",
+        "parent_id": "operations-hub",
+        "order": 3,
+        "meta": {
+            "description": "Persistência, consultas e observabilidade do ecossistema.",
+        },
+    },
+    {
+        "id": "analytics-agent",
+        "name": "Análise de métricas",
+        "type": "agent",
+        "icon": "chart-no-axes-combined",
+        "category": "Dados",
+        "color": "#2DD4BF",
+        "status": "active",
+        "parent_id": "data",
+        "order": 0,
+        "model": "GPT-4.1 mini",
+        "provider": "OpenAI",
+        "meta": {
+            "description": "Consolida métricas e sinaliza desvios importantes para o time.",
+        },
+    },
+    {
+        "id": "mongo-database",
+        "name": "MongoDB",
+        "type": "tool",
+        "icon": "database-zap",
+        "category": "Dados",
+        "color": "#2DD4BF",
+        "status": "active",
+        "parent_id": "data",
+        "order": 1,
+        "provider": "MongoDB",
+        "meta": {
+            "description": "Fonte persistida de usuários, catálogo, automações e execuções.",
+        },
+    },
+]
+
+SEED_AUTOMATION_EXECUTIONS = [
+    {"node_id": "lead-qualification", "status": "success", "duration_seconds": 2.8, "minutes_ago": 14},
+    {"node_id": "support-agent", "status": "success", "duration_seconds": 1.9, "minutes_ago": 41},
+    {"node_id": "analytics-agent", "status": "success", "duration_seconds": 4.2, "minutes_ago": 86},
+    {"node_id": "content-pipeline", "status": "waiting_approval", "duration_seconds": 3.6, "minutes_ago": 142},
+    {"node_id": "lead-qualification", "status": "success", "duration_seconds": 2.4, "minutes_ago": 231},
+    {"node_id": "crm-sync", "status": "error", "duration_seconds": 7.1, "minutes_ago": 318},
+]
+
+TECH_STACK_NODES = [
+    {"id": "stack-react", "name": "React 19", "icon": "atom", "color": "#61DAFB"},
+    {"id": "stack-fastapi", "name": "FastAPI", "icon": "server", "color": "#2DD4BF"},
+    {"id": "stack-mongodb", "name": "MongoDB", "icon": "database", "color": "#22C55E"},
+    {"id": "stack-n8n", "name": "n8n", "icon": "workflow", "color": "#FB923C"},
+]
+
+TECH_STACK_SAVINGS_MONTH_CENTS = 184500
+TECH_STACK_CONNECTIONS_ACTIVE = 8
+TECH_STACK_AUTOMATIONS_ACTIVE = 4
+TECH_STACK_EXECUTIONS_24H = 128

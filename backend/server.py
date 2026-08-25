@@ -10,7 +10,7 @@ import uuid
 import secrets
 import asyncio
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional, Annotated
+from typing import List, Optional, Annotated, Dict, Any
 
 import jwt
 import bcrypt
@@ -166,6 +166,10 @@ class ChatInput(BaseModel):
 
 class RecommendInput(BaseModel):
     query: str
+
+
+class AutomationRunInput(BaseModel):
+    trigger: str = "manual"
 
 
 # ---------------------------------------------------------------------------
@@ -709,6 +713,155 @@ async def maybe_send_lead_notifications(lead: dict, product: Optional[dict]):
 
 
 # ---------------------------------------------------------------------------
+# Automation hub: connection tree, status and executions
+# ---------------------------------------------------------------------------
+def _clean_automation_node(raw: dict) -> dict:
+    node = {key: value for key, value in raw.items() if key != "_id"}
+    meta = dict(node.get("meta") or {})
+    for key in ("description", "model", "provider"):
+        if key in node and key not in meta:
+            meta[key] = node.pop(key)
+    node["meta"] = meta
+    node.setdefault("children", [])
+    return node
+
+
+def _build_automation_tree(raw_nodes: list[dict]) -> dict:
+    nodes = {_node["id"]: _clean_automation_node(_node) for _node in raw_nodes}
+    roots = []
+    for node in nodes.values():
+        parent_id = node.pop("parent_id", None)
+        if parent_id and parent_id in nodes:
+            nodes[parent_id].setdefault("children", []).append(node)
+        else:
+            roots.append(node)
+    roots.sort(key=lambda item: item.get("order", 0))
+    if not roots:
+        return {"id": "sentient-root", "name": "SENTIENT-AI", "type": "root", "children": []}
+    return roots[0]
+
+
+async def _get_automation_node(node_id: str) -> dict:
+    node = await db.automation_nodes.find_one({"id": node_id}, {"_id": 0})
+    if not node:
+        raise HTTPException(status_code=404, detail="Nó de automação não encontrado")
+    return node
+
+
+async def _execute_automation_node(node: dict, trigger: str = "manual") -> dict:
+    started_at = datetime.now(timezone.utc)
+    # O MVP usa a camada persistida do SENTIENT-AI. Quando um webhook n8n for
+    # configurado no registro, a integração pode ser adicionada sem alterar o contrato.
+    await asyncio.sleep(0)
+    duration = round(max((datetime.now(timezone.utc) - started_at).total_seconds(), 0.1), 2)
+    execution = {
+        "id": new_id(),
+        "node_id": node["id"],
+        "node_name": node["name"],
+        "status": "success",
+        "trigger": trigger,
+        "duration_seconds": duration,
+        "started_at": started_at.isoformat(),
+        "finished_at": now_iso(),
+    }
+    await db.automation_executions.insert_one(execution)
+    await db.automation_nodes.update_one(
+        {"id": node["id"]},
+        {"$set": {"last_execution": execution["finished_at"], "status": "active"}},
+    )
+    execution.pop("_id", None)
+    return execution
+
+
+@api_router.get("/tree")
+async def automation_tree(admin: dict = Depends(get_admin_user)):
+    raw_nodes = await db.automation_nodes.find({}, {"_id": 0}).sort("order", 1).to_list(500)
+    return _build_automation_tree(raw_nodes)
+
+
+@api_router.get("/nodes/{node_id}/stats")
+async def automation_node_stats(node_id: str, admin: dict = Depends(get_admin_user)):
+    await _get_automation_node(node_id)
+    executions = await db.automation_executions.find({"node_id": node_id}, {"_id": 0}).sort("started_at", -1).to_list(500)
+    total = len(executions)
+    successful = sum(1 for execution in executions if execution.get("status") == "success")
+    durations = [float(execution.get("duration_seconds", 0)) for execution in executions]
+    return {
+        "executions_24h": sum(
+            1 for execution in executions
+            if execution.get("started_at", "") >= (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+        ),
+        "success_rate": round((successful / total) * 100, 1) if total else 0,
+        "avg_time_seconds": round(sum(durations) / len(durations), 2) if durations else 0,
+        "last_execution": executions[0].get("finished_at") if executions else None,
+    }
+
+
+@api_router.get("/nodes/{node_id}/executions")
+async def automation_node_executions(node_id: str, admin: dict = Depends(get_admin_user), limit: int = 12):
+    await _get_automation_node(node_id)
+    safe_limit = max(1, min(limit, 100))
+    return await db.automation_executions.find(
+        {"node_id": node_id}, {"_id": 0}
+    ).sort("started_at", -1).to_list(safe_limit)
+
+
+@api_router.get("/status")
+async def automation_status(admin: dict = Depends(get_admin_user)):
+    from seed import TECH_STACK_AUTOMATIONS_ACTIVE, TECH_STACK_CONNECTIONS_ACTIVE, TECH_STACK_EXECUTIONS_24H, TECH_STACK_SAVINGS_MONTH_CENTS
+    saved = await db.automation_status.find_one({"id": "system"}, {"_id": 0}) or {
+        "automations_active": TECH_STACK_AUTOMATIONS_ACTIVE,
+        "executions_24h": TECH_STACK_EXECUTIONS_24H,
+        "savings_month_cents": TECH_STACK_SAVINGS_MONTH_CENTS,
+        "connections_active": TECH_STACK_CONNECTIONS_ACTIVE,
+    }
+    active_nodes = await db.automation_nodes.count_documents({"type": "agent", "status": "active"})
+    recent_executions = await db.automation_executions.count_documents({
+        "started_at": {"$gte": (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()}
+    })
+    connections = await db.automation_nodes.count_documents({"type": "tool"})
+    return {
+        "automations_active": active_nodes or saved.get("automations_active", 0),
+        "executions_24h": recent_executions or saved.get("executions_24h", 0),
+        "savings_month_cents": saved.get("savings_month_cents", 0),
+        "connections_active": connections or saved.get("connections_active", 0),
+        "api_online": True,
+        "n8n_connected": bool(os.environ.get("N8N_BASE_URL")),
+    }
+
+
+@api_router.post("/automations/run-all")
+async def run_all_automations(admin: dict = Depends(get_admin_user)):
+    nodes = await db.automation_nodes.find({"type": "agent"}, {"_id": 0}).sort("order", 1).to_list(500)
+    results = []
+    for node in nodes:
+        if node.get("status") == "waiting_approval":
+            results.append({"node_id": node["id"], "node_name": node["name"], "status": "blocked", "message": "Aguardando aprovação"})
+            continue
+        try:
+            execution = await _execute_automation_node(node, trigger="run-all")
+            results.append({"node_id": node["id"], "node_name": node["name"], "status": execution["status"], "execution_id": execution["id"]})
+        except Exception as exc:
+            logger.exception("Falha ao executar %s", node.get("id"))
+            results.append({"node_id": node["id"], "node_name": node["name"], "status": "error", "message": str(exc)})
+    succeeded = sum(1 for result in results if result["status"] == "success")
+    failed = sum(1 for result in results if result["status"] == "error")
+    blocked = sum(1 for result in results if result["status"] == "blocked")
+    return {"ok": failed == 0, "total": len(results), "succeeded": succeeded, "failed": failed, "blocked": blocked, "results": results}
+
+
+@api_router.post("/automations/{automation_id}/run")
+async def run_automation(automation_id: str, data: AutomationRunInput, admin: dict = Depends(get_admin_user)):
+    node = await _get_automation_node(automation_id)
+    if node.get("type") != "agent":
+        raise HTTPException(status_code=400, detail="Apenas agentes podem ser executados")
+    if node.get("status") == "waiting_approval":
+        raise HTTPException(status_code=409, detail="Esta automação aguarda aprovação")
+    execution = await _execute_automation_node(node, trigger=data.trigger)
+    return {"ok": True, "execution": execution}
+
+
+# ---------------------------------------------------------------------------
 # Unified search (command palette)
 # ---------------------------------------------------------------------------
 @api_router.get("/search")
@@ -795,7 +948,12 @@ async def shutdown():
 
 
 async def seed_data():
-    from seed import SEED_CATEGORIES, SEED_PRODUCTS, SEED_SKILLS, SEED_COMMUNITY, SEED_FAQS
+    from seed import (
+        SEED_CATEGORIES, SEED_PRODUCTS, SEED_SKILLS, SEED_COMMUNITY, SEED_FAQS,
+        SEED_AUTOMATION_NODES, SEED_AUTOMATION_EXECUTIONS,
+        TECH_STACK_AUTOMATIONS_ACTIVE, TECH_STACK_EXECUTIONS_24H,
+        TECH_STACK_SAVINGS_MONTH_CENTS, TECH_STACK_CONNECTIONS_ACTIVE,
+    )
     if await db.categories.count_documents({}) == 0:
         cat_map = {}
         for c in SEED_CATEGORIES:
@@ -823,3 +981,30 @@ async def seed_data():
     if await db.faqs.count_documents({}) == 0:
         for i, f in enumerate(SEED_FAQS):
             await db.faqs.insert_one({"id": new_id(), **f, "order": i})
+    if await db.automation_nodes.count_documents({}) == 0:
+        for node in SEED_AUTOMATION_NODES:
+            await db.automation_nodes.insert_one({**node, "created_at": now_iso()})
+    if await db.automation_executions.count_documents({}) == 0:
+        for seed_execution in SEED_AUTOMATION_EXECUTIONS:
+            execution = {key: value for key, value in seed_execution.items() if key != "minutes_ago"}
+            started_at = datetime.now(timezone.utc) - timedelta(minutes=seed_execution["minutes_ago"])
+            finished_at = started_at + timedelta(seconds=float(execution.get("duration_seconds", 0)))
+            await db.automation_executions.insert_one({
+                "id": new_id(),
+                **execution,
+                "node_name": next((node["name"] for node in SEED_AUTOMATION_NODES if node["id"] == execution["node_id"]), execution["node_id"]),
+                "trigger": "seed",
+                "started_at": started_at.isoformat(),
+                "finished_at": finished_at.isoformat(),
+            })
+    await db.automation_status.update_one(
+        {"id": "system"},
+        {"$setOnInsert": {
+            "id": "system",
+            "automations_active": TECH_STACK_AUTOMATIONS_ACTIVE,
+            "executions_24h": TECH_STACK_EXECUTIONS_24H,
+            "savings_month_cents": TECH_STACK_SAVINGS_MONTH_CENTS,
+            "connections_active": TECH_STACK_CONNECTIONS_ACTIVE,
+        }},
+        upsert=True,
+    )

@@ -9,7 +9,7 @@ const items = [
   { to: "/admin/leads", label: "Leads", icon: Users },
 ];
 
-export default function AdminLayout() {
+export default function AdminLayout({ children }) {
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
       <aside className="w-60 shrink-0 border-r border-white/10 bg-[#08080b] p-4 hidden md:flex flex-col">
@@ -30,7 +30,7 @@ export default function AdminLayout() {
         </Link>
       </aside>
       <div className="flex-1 p-5 md:p-8 overflow-x-hidden">
-        <Outlet />
+        {children || <Outlet />}
       </div>
     </div>
   );
