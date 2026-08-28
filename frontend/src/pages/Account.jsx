@@ -3,21 +3,22 @@ import { Link } from "react-router-dom";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { Download, ShoppingBag, User, ExternalLink, Loader2, Save } from "lucide-react";
+import { Bookmark, Download, ShoppingBag, User, ExternalLink, Loader2, Save } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function Account() {
   const { user, setUser } = useAuth();
   const [downloads, setDownloads] = useState([]);
   const [purchases, setPurchases] = useState([]);
+  const [collection, setCollection] = useState([]);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({ name: "", phone: "" });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (user) setProfile({ name: user.name || "", phone: user.phone || "" });
-    Promise.all([api.get("/account/downloads"), api.get("/account/purchases")])
-      .then(([d, p]) => { setDownloads(d.data); setPurchases(p.data); })
+    Promise.all([api.get("/account/downloads"), api.get("/account/purchases"), api.get("/account/collection")])
+      .then(([d, p, c]) => { setDownloads(d.data); setPurchases(p.data); setCollection(c.data); })
       .finally(() => setLoading(false));
   }, [user]);
 
@@ -53,6 +54,9 @@ export default function Account() {
           <TabsTrigger value="purchases" data-testid="tab-purchases" className="rounded-full data-[state=active]:bg-[#FF7A59] data-[state=active]:text-black px-5">
             <ShoppingBag className="w-4 h-4 mr-2" /> Compras
           </TabsTrigger>
+          <TabsTrigger value="collection" data-testid="tab-collection" className="rounded-full data-[state=active]:bg-[#FF7A59] data-[state=active]:text-black px-5">
+            <Bookmark className="w-4 h-4 mr-2" /> Coleção
+          </TabsTrigger>
           <TabsTrigger value="profile" data-testid="tab-profile" className="rounded-full data-[state=active]:bg-[#FF7A59] data-[state=active]:text-black px-5">
             <User className="w-4 h-4 mr-2" /> Perfil
           </TabsTrigger>
@@ -71,6 +75,13 @@ export default function Account() {
               {purchases.length === 0 ? <Empty text="Nenhuma compra registrada ainda." /> : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {purchases.map((p) => <HistoryRow key={p.id} item={p} action={<span className="text-[#ff7a59] text-sm font-mono-code">R$ {p.price}</span>} />)}
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="collection" data-testid="collection-panel">
+              {collection.length === 0 ? <Empty text="Sua coleção está vazia. Salve as skills que quiser consultar depois." link="/skills" label="Explorar skills" /> : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {collection.map((skill) => <CollectionCard key={skill.id} skill={skill} />)}
                 </div>
               )}
             </TabsContent>
@@ -110,9 +121,18 @@ const HistoryRow = ({ item, action }) => (
   </div>
 );
 
-const Empty = ({ text }) => (
+const Empty = ({ text, link = "/", label = "Ir ao marketplace" }) => (
   <div className="text-center py-16">
     <p className="text-white/40 mb-4">{text}</p>
-    <Link to="/" className="text-[#FF7A59] hover:underline inline-flex items-center gap-1">Ir ao marketplace <ExternalLink className="w-4 h-4" /></Link>
+    <Link to={link} className="text-[#FF7A59] hover:underline inline-flex items-center gap-1">{label} <ExternalLink className="w-4 h-4" /></Link>
   </div>
+);
+
+const CollectionCard = ({ skill }) => (
+  <Link to="/skills" className="block rounded-xl bg-[#0F0F13] border border-white/10 p-5 hover:border-[#FF7A59]/45 transition-colors">
+    <div className="flex items-start justify-between gap-3"><span className="text-[10px] uppercase tracking-[0.13em] text-[#FF7A59] font-mono-code">{skill.category}</span><Bookmark className="w-4 h-4 text-[#1689E8] fill-current" /></div>
+    <h3 className="font-display text-base mt-3">{skill.title}</h3>
+    <p className="text-sm text-white/50 mt-2 line-clamp-2">{skill.description}</p>
+    <p className="text-xs text-white/35 mt-4">Salva em {new Date(skill.saved_at).toLocaleDateString("pt-BR")}</p>
+  </Link>
 );

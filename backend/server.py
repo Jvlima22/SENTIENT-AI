@@ -494,6 +494,43 @@ async def my_purchases(user: dict = Depends(get_current_user)):
     return await db.purchases.find({"user_id": user["user_id"]}, {"_id": 0}).sort("created_at", -1).to_list(1000)
 
 
+@api_router.get("/account/collection")
+async def my_skill_collection(user: dict = Depends(get_current_user)):
+    saved_items = await db.skill_collections.find(
+        {"user_id": user["user_id"]}, {"_id": 0}
+    ).sort("saved_at", -1).to_list(1000)
+    skill_ids = [item["skill_id"] for item in saved_items]
+    if not skill_ids:
+        return []
+
+    skills = await db.skills.find({"id": {"$in": skill_ids}}, {"_id": 0}).to_list(1000)
+    skills_by_id = {skill["id"]: skill for skill in skills}
+    return [
+        {**skills_by_id[item["skill_id"]], "saved_at": item["saved_at"]}
+        for item in saved_items
+        if item["skill_id"] in skills_by_id
+    ]
+
+
+@api_router.post("/account/collection/{skill_id}")
+async def save_skill_to_collection(skill_id: str, user: dict = Depends(get_current_user)):
+    if not await db.skills.find_one({"id": skill_id}, {"_id": 1}):
+        raise HTTPException(status_code=404, detail="Skill não encontrada")
+    saved_at = now_iso()
+    await db.skill_collections.update_one(
+        {"user_id": user["user_id"], "skill_id": skill_id},
+        {"$setOnInsert": {"user_id": user["user_id"], "skill_id": skill_id, "saved_at": saved_at}},
+        upsert=True,
+    )
+    return {"ok": True, "skill_id": skill_id, "saved_at": saved_at}
+
+
+@api_router.delete("/account/collection/{skill_id}")
+async def remove_skill_from_collection(skill_id: str, user: dict = Depends(get_current_user)):
+    await db.skill_collections.delete_one({"user_id": user["user_id"], "skill_id": skill_id})
+    return {"ok": True}
+
+
 @api_router.get("/admin/leads")
 async def admin_leads(admin: dict = Depends(get_admin_user)):
     return await db.leads.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
@@ -995,6 +1032,7 @@ async def startup():
 async def _run_startup_tasks():
     await db.users.create_index("email", unique=True)
     await db.users.create_index("user_id", unique=True)
+    await db.skill_collections.create_index([("user_id", 1), ("skill_id", 1)], unique=True)
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@sentient-ai.com").lower()
     admin_pass = os.environ.get("ADMIN_PASSWORD", "Admin@123")
     existing = await db.users.find_one({"email": admin_email})
