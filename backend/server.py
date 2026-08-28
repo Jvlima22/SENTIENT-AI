@@ -16,10 +16,11 @@ import jwt
 import bcrypt
 import requests
 from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import certifi
+from pymongo.errors import PyMongoError
 from pydantic import BaseModel, Field, EmailStr, BeforeValidator, ConfigDict
 
 # ---------------------------------------------------------------------------
@@ -42,6 +43,21 @@ client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where()) if mongo_url e
 db = client[db_name] if client is not None else None
 
 app = FastAPI(title="SENTIENT-AI Hub")
+
+
+@app.exception_handler(PyMongoError)
+async def handle_mongo_error(request: Request, exc: PyMongoError):
+    """Evita que falhas de conexão com Atlas virem um 500 sem contexto."""
+    logger.exception("Falha ao consultar o MongoDB em %s", request.url.path)
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": (
+                "Não foi possível acessar o banco de dados. Verifique MONGO_URL "
+                "na Vercel e o acesso de rede do MongoDB Atlas."
+            )
+        },
+    )
 
 
 async def require_db():
@@ -283,6 +299,18 @@ async def google_session(request: Request, response: Response):
 @api_router.get("/auth/me")
 async def me(user: dict = Depends(get_current_user)):
     return user
+
+
+@api_router.get("/auth/session")
+async def auth_session(request: Request):
+    """Informa o estado da sessão sem tratar visitantes como erro HTTP."""
+    try:
+        user = await get_current_user(request)
+    except HTTPException as exc:
+        if exc.status_code == 401:
+            return {"authenticated": False, "user": None}
+        raise
+    return {"authenticated": True, "user": user}
 
 
 @api_router.post("/auth/logout")
