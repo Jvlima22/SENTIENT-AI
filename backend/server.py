@@ -23,6 +23,12 @@ import certifi
 from pydantic import BaseModel, Field, EmailStr, BeforeValidator, ConfigDict
 
 # ---------------------------------------------------------------------------
+# Árvore de Conexões (feature nova) — router separado, dado mock por enquanto
+# ---------------------------------------------------------------------------
+# A integração da árvore é opcional e só deve ser ativada quando o módulo
+# tree_routes.py estiver presente no backend.
+
+# ---------------------------------------------------------------------------
 # DB & App setup
 # ---------------------------------------------------------------------------
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -137,6 +143,12 @@ class SkillInput(BaseModel):
     description: str = ""
     command: str = ""
     tags: List[str] = []
+    kind: str = "Prompt"
+    level: str = "Iniciante"
+
+
+class SkillCommentInput(BaseModel):
+    body: str = Field(min_length=1, max_length=1000)
 
 
 class CommunityLinkInput(BaseModel):
@@ -493,13 +505,19 @@ async def admin_metrics(admin: dict = Depends(get_admin_user)):
 # Skills / Community / FAQ
 # ---------------------------------------------------------------------------
 @api_router.get("/skills")
-async def list_skills(category: Optional[str] = None, search: Optional[str] = None):
+async def list_skills(category: Optional[str] = None, search: Optional[str] = None,
+                      kind: Optional[str] = None, level: Optional[str] = None):
     query = {}
     if category and category != "all":
         query["category"] = category
     if search:
         query["$or"] = [{"title": {"$regex": search, "$options": "i"}},
-                        {"description": {"$regex": search, "$options": "i"}}]
+                        {"description": {"$regex": search, "$options": "i"}},
+                        {"tags": {"$regex": search, "$options": "i"}}]
+    if kind and kind != "all":
+        query["kind"] = kind
+    if level and level != "all":
+        query["level"] = level
     return await db.skills.find(query, {"_id": 0}).to_list(1000)
 
 
@@ -523,6 +541,22 @@ async def update_skill(skill_id: str, data: SkillInput, admin: dict = Depends(ge
 async def delete_skill(skill_id: str, admin: dict = Depends(get_admin_user)):
     await db.skills.delete_one({"id": skill_id})
     return {"ok": True}
+
+
+@api_router.get("/skills/{skill_id}/comments")
+async def list_skill_comments(skill_id: str):
+    return await db.skill_comments.find({"skill_id": skill_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+
+
+@api_router.post("/skills/{skill_id}/comments")
+async def create_skill_comment(skill_id: str, data: SkillCommentInput, user: dict = Depends(get_current_user)):
+    if not await db.skills.find_one({"id": skill_id}, {"_id": 1}):
+        raise HTTPException(status_code=404, detail="Skill não encontrada")
+    doc = {"id": new_id(), "skill_id": skill_id, "body": data.body.strip(),
+           "user_id": user["user_id"], "author_name": user.get("name") or user.get("email", "Membro"),
+           "created_at": now_iso()}
+    await db.skill_comments.insert_one(doc)
+    return doc
 
 
 @api_router.get("/community")
@@ -890,6 +924,10 @@ async def root():
 
 app.include_router(api_router)
 
+# Rotas da Árvore de Conexões — registradas no nível do módulo, junto com o
+# api_router principal. Ainda usam dado mock (ver tree_routes.py); trocar
+# por Mongo/n8n quando a fonte de verdade for decidida.
+
 _cors_origins = [o.strip() for o in os.environ.get('CORS_ORIGINS', '').split(',') if o.strip()]
 if not _cors_origins or _cors_origins == ["*"]:
     logger.warning("CORS_ORIGINS não configurada corretamente (vazia ou '*') — "
@@ -972,9 +1010,17 @@ async def seed_data():
                 "download_url": p.get("download_url", ""), "tags": p["tags"],
                 "featured": p.get("featured", False), "views": p.get("views", 0),
                 "downloads": p.get("downloads", 0), "created_at": now_iso()})
-    if await db.skills.count_documents({}) == 0:
-        for s in SEED_SKILLS:
-            await db.skills.insert_one({"id": new_id(), **s, "created_at": now_iso()})
+    # Skills editoriais são sincronizadas por título para que novas versões do
+    # catálogo cheguem também a instalações que já possuem dados iniciais.
+    for s in SEED_SKILLS:
+        await db.skills.update_one(
+            {"title": s["title"]},
+            {"$set": {**s, "kind": s.get("kind", "Prompt"),
+                      "level": s.get("level", "Iniciante"),
+                      "source": "sentient-curated", "updated_at": now_iso()},
+             "$setOnInsert": {"id": new_id(), "created_at": now_iso()}},
+            upsert=True,
+        )
     if await db.community_links.count_documents({}) == 0:
         for l in SEED_COMMUNITY:
             await db.community_links.insert_one({"id": new_id(), **l})

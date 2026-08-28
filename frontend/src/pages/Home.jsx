@@ -53,7 +53,7 @@ export default function Home() {
   const stats = [
     { label: "Recursos", value: "50+" },
     { label: "Automações", value: "20+" },
-    { label: "Skills Claude", value: "100+" },
+    { label: "Skills", value: "100+" },
     { label: "Gratuitos", value: "Vários" },
   ];
 

@@ -55,6 +55,26 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Menus nativos obedecem ao tema do sistema no Windows. Sem esta regra, o
+   popup pode abrir branco enquanto os textos herdados continuam claros. */
+select {
+  color-scheme: dark;
+  background-color: #121218;
+  color: #f4f4f5;
+}
+
+select option,
+select optgroup {
+  background-color: #121218;
+  color: #f4f4f5;
+}
+
+select option:checked {
+  background-color: #FF7A59;
+  color: #09090b;
+}
+
+
 body::before {
   content: "";
   position: fixed;

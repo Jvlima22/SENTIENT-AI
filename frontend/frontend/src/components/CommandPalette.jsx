@@ -136,7 +136,7 @@ export const CommandPalette = () => {
                       {data.products.map((p) => <ProductRow key={p.id} p={p} onClick={() => go(`/produto/${p.id}`)} />)}</>
                   )}
                   {data.skills.length > 0 && (
-                    <><SectionLabel icon={Terminal}>Skills Claude</SectionLabel>
+                    <><SectionLabel icon={Terminal}>Skills</SectionLabel>
                       {data.skills.map((s) => (
                         <Row key={s.id} onClick={() => go("/skills")} testid={`command-skill-${s.id}`}
                           icon={<Terminal className="w-4 h-4 text-[#FF7A59]" />} title={s.title} sub={s.category} />

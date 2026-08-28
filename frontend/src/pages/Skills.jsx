@@ -1,85 +1,64 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import api from "@/lib/api";
 import { useI18n } from "@/context/I18nContext";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { Copy, Check, Terminal, Search, Loader2 } from "lucide-react";
+import { Bookmark, Check, ChevronDown, Copy, Download, Filter, History, Loader2, MessageCircle, Play, Search, Send, Sparkles, Tag, Terminal, X } from "lucide-react";
+
+const ALL = "all";
 
 export default function Skills() {
   const { t } = useI18n();
-  const [skills, setSkills] = useState([]);
-  const [search, setSearch] = useState("");
-  const [cat, setCat] = useState("all");
-  const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(null);
-
-  useEffect(() => {
-    setLoading(true);
-    const params = {};
-    if (cat !== "all") params.category = cat;
-    if (search) params.search = search;
-    const id = setTimeout(() => api.get("/skills", { params }).then((r) => { setSkills(r.data); setLoading(false); }), 250);
-    return () => clearTimeout(id);
-  }, [search, cat]);
-
-  const [allCats, setAllCats] = useState([]);
-  useEffect(() => { api.get("/skills").then((r) => setAllCats([...new Set(r.data.map((s) => s.category))])); }, []);
-
-  const copy = (skill) => {
-    navigator.clipboard.writeText(skill.command);
-    setCopied(skill.id);
-    toast.success(t("copied"));
-    setTimeout(() => setCopied(null), 1500);
-  };
-
-  return (
-    <div className="max-w-[1400px] mx-auto px-5 md:px-8 py-12">
-      <div className="flex items-center gap-2 mb-3">
-        <Terminal className="w-6 h-6 text-[#FF7A59]" />
-        <span className="text-xs uppercase tracking-wide text-[#FF7A59] font-mono-code">Prompt Library</span>
-      </div>
-      <h1 className="font-display font-800 text-4xl md:text-5xl tracking-tight mb-4">{t("skills")}</h1>
-      <p className="text-white/55 max-w-2xl mb-10 leading-relaxed">Comandos e prompts avançados prontos para usar com o Claude. Copie com um clique e turbine sua produtividade.</p>
-
-      <div className="flex flex-col lg:flex-row lg:items-center gap-4 mb-8">
-        <div className="relative w-full lg:w-96">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} data-testid="skills-search"
-            placeholder="Buscar skills..." className="w-full bg-white/5 border border-white/10 rounded-full pl-11 pr-4 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50 transition-colors" />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Chip active={cat === "all"} onClick={() => setCat("all")}>{t("all")}</Chip>
-          {allCats.map((c) => <Chip key={c} active={cat === c} onClick={() => setCat(c)}>{c}</Chip>)}
-        </div>
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-[#FF7A59] animate-spin" /></div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5" data-testid="skills-grid">
-          {skills.map((s, i) => (
-            <div key={s.id} data-testid={`skill-card-${s.id}`} className="grid-fade-in group rounded-xl bg-[#0A0A0F] border border-white/10 p-5 hover:border-[#FF7A59]/30 transition-colors"
-              style={{ animationDelay: `${Math.min(i * 60, 400)}ms` }}>
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <div>
-                  <span className="text-[11px] uppercase text-[#FF7A59]/70 font-mono-code tracking-wide">{s.category}</span>
-                  <h3 className="font-display text-lg mt-1">{s.title}</h3>
-                </div>
-                <button onClick={() => copy(s)} data-testid={`skill-copy-${s.id}`}
-                  className="shrink-0 flex items-center gap-1.5 text-xs bg-white/5 border border-white/10 rounded-full px-3 py-1.5 hover:border-[#FF7A59]/50 hover:text-[#FF7A59] transition-colors">
-                  {copied === s.id ? <Check className="w-3.5 h-3.5 text-[#22C55E]" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copied === s.id ? t("copied") : t("copy")}
-                </button>
-              </div>
-              <p className="text-sm text-white/50 mb-4">{s.description}</p>
-              <pre className="bg-black/50 border border-white/5 rounded-lg p-4 text-xs text-white/70 font-mono-code overflow-x-auto whitespace-pre-wrap max-h-40">{s.command}</pre>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  const [skills, setSkills] = useState([]), [catalog, setCatalog] = useState([]);
+  const [search, setSearch] = useState(""), [category, setCategory] = useState(ALL), [kind, setKind] = useState(ALL), [level, setLevel] = useState(ALL);
+  const [loading, setLoading] = useState(true), [copied, setCopied] = useState(null), [openSkill, setOpenSkill] = useState(null), [showFilters, setShowFilters] = useState(false);
+  useEffect(() => { api.get("/skills").then((r) => setCatalog(r.data)).catch(() => setCatalog([])); }, []);
+  useEffect(() => { setLoading(true); const params = {}; if (category !== ALL) params.category = category; if (kind !== ALL) params.kind = kind; if (level !== ALL) params.level = level; if (search.trim()) params.search = search.trim(); const id = setTimeout(() => api.get("/skills", { params }).then((r) => setSkills(r.data)).catch(() => { setSkills([]); toast.error("Não foi possível carregar as skills."); }).finally(() => setLoading(false)), 220); return () => clearTimeout(id); }, [search, category, kind, level]);
+  const categories = useMemo(() => [...new Set(catalog.map((s) => s.category).filter(Boolean))].sort(), [catalog]);
+  const kinds = useMemo(() => [...new Set(catalog.map((s) => s.kind || "Prompt").filter(Boolean))].sort(), [catalog]);
+  const levels = useMemo(() => [...new Set(catalog.map((s) => s.level || "Iniciante").filter(Boolean))], [catalog]);
+  const activeFilters = [category, kind, level].filter((item) => item !== ALL).length;
+  const copy = async (skill) => { try { await navigator.clipboard.writeText(skill.command); setCopied(skill.id); toast.success(t("copied")); setTimeout(() => setCopied(null), 1500); } catch { toast.error("Não foi possível copiar o prompt."); } };
+  const clearFilters = () => { setSearch(""); setCategory(ALL); setKind(ALL); setLevel(ALL); };
+  return <div className="max-w-[1440px] mx-auto px-5 md:px-8 py-10 md:py-14">
+    <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0A0A0F] px-6 py-9 md:px-10 md:py-12 mb-8"><div className="aurora aurora-a w-72 h-72 bg-[#FF7A59]/25 -right-24 -top-28" /><div className="relative"><div className="flex items-center gap-2 mb-4 text-[#FF7A59]"><Sparkles className="w-5 h-5" /><span className="text-xs uppercase tracking-[0.16em] font-mono-code">Biblioteca de prompts</span></div><div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6"><div><h1 className="font-display font-800 text-3xl md:text-5xl tracking-tight">Skills para transformar<br className="hidden md:block" /> intenção em ação.</h1><p className="text-white/55 max-w-2xl mt-4 leading-relaxed">Prompts práticos, em português, criados para você adaptar ao seu contexto e usar com a IA de sua preferência.</p></div><div className="shrink-0 rounded-2xl border border-white/10 bg-black/20 px-5 py-4"><span className="block text-2xl font-display text-[#FF7A59]">{catalog.length || "—"}</span><span className="text-xs text-white/45">skills disponíveis</span></div></div></div></section>
+    <section className="mb-8" aria-label="Filtros da biblioteca"><div className="relative max-w-2xl mb-5"><div className="flex items-center gap-2"><div className="relative flex-1"><Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" /><input value={search} onChange={(e) => setSearch(e.target.value)} data-testid="skills-search" placeholder="Busque por tema, objetivo ou tag..." className="w-full bg-white/[0.045] border border-white/10 rounded-2xl pl-11 pr-10 py-3.5 text-sm outline-none focus:border-[#FF7A59]/60" />{search && <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/45 hover:text-white"><X className="w-4 h-4" /></button>}</div><button onClick={() => setShowFilters(!showFilters)} className={`shrink-0 rounded-2xl border p-3.5 ${showFilters ? "bg-[#1689E8] border-[#1689E8]" : "border-white/15 text-white/65"}`}><Filter className="w-4 h-4" /></button></div>{showFilters && <div className="absolute z-20 left-0 top-[calc(100%+12px)] w-full max-w-md rounded-2xl border border-white/15 bg-[#101015] p-5 shadow-2xl"><div className="flex justify-between mb-4"><div><p className="text-sm font-medium">Filtros avançados</p><p className="text-xs text-white/45 mt-1">Refine os resultados.</p></div><button onClick={() => setShowFilters(false)}><X className="w-4 h-4 text-white/45" /></button></div><div className="grid grid-cols-2 gap-3"><FilterSelect label="Tipo" value={kind} onChange={setKind} options={kinds} allLabel="Todos" /><FilterSelect label="Nível" value={level} onChange={setLevel} options={levels} allLabel="Todos" /></div><button onClick={clearFilters} className="text-xs text-[#FF7A59] mt-4">Limpar filtros</button></div>}</div><div className="flex flex-wrap gap-2"><Chip active={category === ALL} onClick={() => setCategory(ALL)}>Todas as categorias</Chip>{categories.map((item) => <Chip key={item} active={category === item} onClick={() => setCategory(item)}>{item}</Chip>)}</div></section>
+    <div className="flex items-center justify-between mb-5"><p className="text-sm text-white/45">{loading ? "Buscando skills..." : `${skills.length} skills encontradas`}</p>{activeFilters > 0 && <span className="text-xs text-[#ff9b85]">{activeFilters} filtro(s) ativo(s)</span>}</div>
+    {loading ? <div className="flex justify-center py-24"><Loader2 className="w-8 h-8 text-[#FF7A59] animate-spin" /></div> : skills.length === 0 ? <div className="rounded-2xl border border-dashed border-white/15 py-20 text-center"><Terminal className="w-7 h-7 text-white/25 mx-auto mb-3" /><h2 className="font-display text-base">Nenhuma skill encontrada</h2><button onClick={clearFilters} className="mt-5 text-sm text-[#FF7A59]">Ver todas as skills</button></div> : <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" data-testid="skills-grid">{skills.map((skill, index) => <SkillCard key={skill.id} skill={skill} index={index} copied={copied} onCopy={copy} onOpen={setOpenSkill} />)}</div>}
+    {openSkill && <SkillDialog skill={openSkill} copied={copied} onCopy={copy} onClose={() => setOpenSkill(null)} />}
+  </div>;
 }
 
-const Chip = ({ active, onClick, children }) => (
-  <button onClick={onClick} className={`text-sm px-4 py-1.5 rounded-full border transition-colors ${active ? "bg-[#FF7A59] text-black border-[#FF7A59]" : "border-white/15 text-white/60 hover:border-white/40"}`}>{children}</button>
-);
+function Chip({ active, onClick, children }) { return <button onClick={onClick} className={`rounded-full border px-4 py-2 text-xs font-medium transition-colors ${active ? "bg-[#1689E8] border-[#1689E8] text-white" : "border-white/15 text-white/70 hover:border-white/40 hover:text-white"}`}>{children}</button>; }
+function FilterSelect({ label, value, onChange, options, allLabel }) { return <label><span className="block text-xs text-white/55 mb-2">{label}</span><div className="relative"><select value={value} onChange={(e) => onChange(e.target.value)} className="w-full appearance-none rounded-xl border border-white/15 bg-[#17171e] px-3 py-2.5 text-sm text-white"><option value={ALL}>{allLabel}</option>{options.map((item) => <option key={item} value={item}>{item}</option>)}</select><ChevronDown className="absolute right-3 top-3 w-4 h-4 text-white/45 pointer-events-none" /></div></label>; }
+function SkillCard({ skill, index, copied, onCopy, onOpen }) { const preview = skill.command.length > 190 ? `${skill.command.slice(0, 190)}…` : skill.command; return <article onClick={() => onOpen(skill)} className="grid-fade-in cursor-pointer flex flex-col rounded-2xl bg-[#0A0A0F] border border-white/10 p-5 hover:border-[#FF7A59]/45 hover:-translate-y-0.5 transition-all" style={{ animationDelay: `${Math.min(index * 35, 350)}ms` }}><div className="flex justify-between"><div><span className="text-[10px] uppercase tracking-[0.13em] text-[#FF7A59] font-mono-code">{skill.category}</span><h2 className="font-display text-base mt-4">{skill.title}</h2></div><span className="text-[10px] text-white/35">{skill.kind || "Prompt"}</span></div><p className="text-sm text-white/50 mt-3 min-h-11">{skill.description}</p><div className="mt-4 rounded-xl bg-black/35 border border-white/5 p-3 font-mono-code text-[11px] text-white/55 line-clamp-4 whitespace-pre-wrap">{preview}</div><div className="flex flex-wrap gap-1.5 mt-3">{(skill.tags || []).slice(0, 4).map((tag) => <span key={tag} className="inline-flex gap-1 text-[10px] text-white/45"><Tag className="w-2.5 h-2.5" />{tag}</span>)}</div><div className="flex gap-2 mt-5 pt-4 border-t border-white/[0.07]"><button onClick={(e) => { e.stopPropagation(); onCopy(skill); }} className="inline-flex items-center gap-1.5 text-xs rounded-full bg-[#FF7A59] text-black px-3.5 py-2 font-medium">{copied === skill.id ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}{copied === skill.id ? "Copiado" : "Copiar prompt"}</button><button onClick={(e) => { e.stopPropagation(); onOpen(skill); }} className="text-xs text-white/55 px-2">Ver completo</button></div></article>; }
+
+function SkillDialog({ skill, copied, onCopy, onClose }) {
+  const { user } = useAuth();
+  const { lang } = useI18n();
+  const [tab, setTab] = useState("content"), [executeOpen, setExecuteOpen] = useState(false), [executeTab, setExecuteTab] = useState("chat");
+  const [comments, setComments] = useState([]), [comment, setComment] = useState(""), [sending, setSending] = useState(false);
+  const [saved, setSaved] = useState(() => JSON.parse(localStorage.getItem("sentient-saved-skills") || "[]").includes(skill.id));
+  const prompt = skill.command;
+  const exportPrompt = lang === "en"
+    ? `Respond entirely in English.\n\n${prompt}`
+    : `Responda inteiramente em português do Brasil.\n\n${prompt}`;
+  useEffect(() => { setExecuteOpen(false); api.get(`/skills/${skill.id}/comments`).then((r) => setComments(r.data)).catch(() => setComments([])); }, [skill.id]);
+  const copyPrompt = async () => { try { await navigator.clipboard.writeText(exportPrompt); await onCopy({ ...skill, command: exportPrompt }); return true; } catch { toast.error("Não foi possível copiar o prompt."); return false; } };
+  const destinations = { ChatGPT: "https://chatgpt.com/", Claude: "https://claude.ai/new", Gemini: "https://gemini.google.com/app", Perplexity: "https://www.perplexity.ai/" };
+  const exportTo = async (name) => { window.open(destinations[name], "_blank", "noopener,noreferrer"); setExecuteOpen(false); if (await copyPrompt()) toast.success("Prompt copiado. Cole com Ctrl+V na nova conversa."); };
+  const save = () => { const current = JSON.parse(localStorage.getItem("sentient-saved-skills") || "[]"); const next = saved ? current.filter((id) => id !== skill.id) : [...new Set([...current, skill.id])]; localStorage.setItem("sentient-saved-skills", JSON.stringify(next)); setSaved(!saved); toast.success(saved ? "Removida da coleção." : "Skill salva na coleção."); };
+  const download = () => { const url = URL.createObjectURL(new Blob([`# ${skill.title}\n\n${exportPrompt}\n`], { type: "text/markdown" })); const a = document.createElement("a"); a.href = url; a.download = `${skill.title}.md`; a.click(); URL.revokeObjectURL(url); };
+  const post = async (e) => { e.preventDefault(); if (!user) return toast.error("Entre na sua conta para comentar."); if (!comment.trim()) return; setSending(true); try { const { data } = await api.post(`/skills/${skill.id}/comments`, { body: comment.trim() }); setComments([data, ...comments]); setComment(""); } catch { toast.error("Não foi possível publicar o comentário."); } finally { setSending(false); } };
+  return <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onMouseDown={onClose}><section onMouseDown={(e) => e.stopPropagation()} className="w-full max-w-4xl max-h-[90vh] overflow-auto rounded-2xl bg-[#101015] border border-white/15 shadow-2xl"><header className="sticky top-0 z-10 flex justify-between gap-4 p-5 md:p-6 bg-[#101015]/95 backdrop-blur border-b border-white/10"><div><span className="text-[10px] uppercase tracking-[0.13em] text-[#FF7A59] font-mono-code">{skill.category} · {skill.kind || "Prompt"}</span><h2 className="font-display text-xl md:text-2xl mt-2">{skill.title}</h2></div><button onClick={onClose} className="p-2 text-white/50 hover:text-white"><X className="w-5 h-5" /></button></header><div className="p-5 md:p-6"><div className="flex flex-col sm:flex-row justify-between gap-4 mb-6"><p className="text-white/60 max-w-2xl">{skill.description}</p><button onClick={save} className={`inline-flex h-fit items-center gap-2 rounded-full border px-4 py-2 text-sm ${saved ? "border-[#1689E8] text-[#72baff]" : "border-white/15 text-white/70"}`}><Bookmark className={`w-4 h-4 ${saved ? "fill-current" : ""}`} />{saved ? "Na sua coleção" : "Adicionar à coleção"}</button></div><div className="flex gap-5 border-b border-white/10 mb-6"><Tab active={tab === "content"} onClick={() => setTab("content")}><Terminal className="w-4 h-4" />Conteúdo</Tab><Tab active={tab === "versions"} onClick={() => setTab("versions")}><History className="w-4 h-4" />Versões 1</Tab></div>{tab === "content" ? <><div className="flex justify-end relative mb-3"><button onClick={() => setExecuteOpen(!executeOpen)} className="inline-flex items-center gap-2 rounded-lg bg-white text-black px-3 py-1.5 text-xs font-medium"><Play className="w-3.5 h-3.5 fill-current" />Executar</button>{executeOpen && <ExecuteMenu tab={executeTab} setTab={setExecuteTab} onChoose={exportTo} onCopy={copyPrompt} onDownload={download} />}</div><pre className="rounded-xl border border-white/10 bg-black/45 p-4 md:p-5 text-sm text-white/80 font-mono-code whitespace-pre-wrap leading-relaxed overflow-x-auto">{prompt}</pre></> : <div className="rounded-xl border border-white/10 bg-black/25 p-5"><p className="text-sm font-medium">Versão 1</p><p className="text-xs text-white/45 mt-1">Versão editorial atual deste prompt.</p></div>}<section className="mt-8 pt-7 border-t border-white/10"><div className="flex items-center gap-2 mb-4"><MessageCircle className="w-4 h-4 text-[#FF7A59]" /><h3 className="font-display text-sm">Comentários ({comments.length})</h3></div>{user ? <form onSubmit={post} className="mb-6"><textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Compartilhe uma dúvida, adaptação ou resultado..." className="w-full min-h-24 rounded-xl bg-black/35 border border-white/10 p-3 text-sm outline-none focus:border-[#FF7A59]" /><div className="flex justify-end mt-2"><button disabled={sending || !comment.trim()} className="inline-flex items-center gap-2 rounded-full bg-[#FF7A59] text-black px-4 py-2 text-xs font-medium disabled:opacity-45"><Send className="w-3.5 h-3.5" />Publicar comentário</button></div></form> : <div className="rounded-xl border border-dashed border-white/15 p-4 text-sm text-white/55 mb-6">Entre na sua conta para participar da conversa.</div>}<div className="space-y-3">{comments.length ? comments.map((item) => <article key={item.id} className="rounded-xl border border-white/[0.08] bg-black/20 p-4"><p className="text-sm font-medium">{item.author_name}</p><p className="text-sm text-white/65 mt-2 whitespace-pre-wrap">{item.body}</p></article>) : <p className="text-sm text-white/45">Ainda não há comentários. Seja a primeira pessoa.</p>}</div></section></div><footer className="sticky bottom-0 p-4 md:p-5 flex justify-end border-t border-white/10 bg-[#101015]/95"><button onClick={copyPrompt} className="inline-flex items-center gap-2 rounded-full bg-[#FF7A59] text-black px-4 py-2.5 text-sm font-medium"><Copy className="w-4 h-4" />{copied === skill.id ? "Prompt copiado" : "Copiar prompt"}</button></footer></section></div>;
+}
+
+function Tab({ active, onClick, children }) { return <button onClick={onClick} className={`inline-flex gap-2 items-center border-b-2 -mb-px pb-3 text-sm ${active ? "border-[#FF7A59] text-white" : "border-transparent text-white/45"}`}>{children}</button>; }
+const AI_LOGOS = {
+  ChatGPT: "/ai-logos/openai.svg",
+  Claude: "/ai-logos/claude.svg",
+  Gemini: "/ai-logos/gemini.svg",
+  Perplexity: "/ai-logos/perplexity.svg",
+};
+
+function ExecuteMenu({ tab, setTab, onChoose, onCopy, onDownload }) { const names = tab === "chat" ? ["ChatGPT", "Claude", "Gemini", "Perplexity"] : ["ChatGPT", "Claude", "Gemini", "Perplexity"]; return <div className="absolute right-0 top-[calc(100%+8px)] z-20 w-64 rounded-xl border border-white/15 bg-[#17171e] p-2 shadow-2xl text-left"><div className="flex border-b border-white/10 mb-1"><button onClick={() => setTab("chat")} className={`flex-1 px-3 py-2 text-xs ${tab === "chat" ? "text-white border-b-2 border-[#FF7A59]" : "text-white/45"}`}>Chat</button><button onClick={() => setTab("code")} className={`flex-1 px-3 py-2 text-xs ${tab === "code" ? "text-white border-b-2 border-[#FF7A59]" : "text-white/45"}`}>Code</button></div>{names.map((name) => <button key={name} onClick={() => onChoose(name)} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-white/75 hover:bg-white/10 hover:text-white"><span className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-md bg-white/[0.06]"><img src={AI_LOGOS[name]} alt={`${name} logo`} className={`h-4 w-4 object-contain ${name === "Perplexity" ? "invert" : ""}`} onError={(event) => { event.currentTarget.classList.add("hidden"); event.currentTarget.nextElementSibling.classList.remove("hidden"); }} /><span aria-hidden="true" className="hidden text-[9px] font-bold text-white/45">AI</span></span>{name}</button>)}<div className="border-t border-white/10 mt-1 pt-1"><button onClick={onCopy} className="w-full rounded-lg px-3 py-2 text-xs text-white/55 hover:bg-white/10 text-left">Copiar prompt</button><button onClick={onDownload} className="w-full rounded-lg px-3 py-2 text-xs text-white/55 hover:bg-white/10 text-left"><Download className="w-3.5 h-3.5 inline mr-2" />Baixar Markdown</button></div></div>; }

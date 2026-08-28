@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from "react";
 
 const dict = {
   pt: {
-    marketplace: "Marketplace", skills: "Skills Claude", community: "Comunidade", faq: "FAQ",
+    marketplace: "Marketplace", skills: "Skills", community: "Comunidade", faq: "FAQ",
     login: "Entrar", register: "Criar conta", account: "Minha Conta", admin: "Admin", logout: "Sair",
     hero_tag: "Hub de Ativos Digitais com IA",
     hero_title: "Descubra, acesse e escale com recursos digitais inteligentes",
