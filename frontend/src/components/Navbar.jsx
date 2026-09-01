@@ -22,8 +22,11 @@ export const Navbar = () => {
   ];
   const isActive = (to) => (to === "/" ? loc.pathname === "/" : loc.pathname.startsWith(to));
 
+  // O detalhe da skill possui sua própria navegação e ocupa toda a área visível.
+  if (loc.pathname.startsWith("/skills/")) return null;
+
   return (
-    <header className="sticky top-0 z-50 glass" data-testid="navbar">
+    <header className="sticky top-0 z-50 relative glass" data-testid="navbar">
       <div className="max-w-[1400px] mx-auto px-5 md:px-8 flex items-center justify-between h-16 gap-4">
         <div className="flex items-center gap-4">
           <Logo height={24} />
@@ -79,7 +82,7 @@ export const Navbar = () => {
       </div>
 
       {open && (
-        <div className="md:hidden glass border-t border-white/10 px-5 py-4 flex flex-col gap-4" data-testid="mobile-menu">
+        <div className="absolute inset-x-0 top-full z-50 md:hidden !bg-[#101015] border-t border-white/10 px-5 py-4 flex flex-col gap-4 shadow-2xl" data-testid="mobile-menu">
           {links.map((l) => (
             <Link key={l.to} to={l.to} onClick={() => setMenu(false)} className="text-white/80 hover:text-[#FF7A59]">{l.label}</Link>
           ))}
