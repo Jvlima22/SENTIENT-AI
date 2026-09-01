@@ -21,7 +21,7 @@ export default function AdminDashboard() {
       <h1 className="font-display text-2xl mb-1">Dashboard</h1>
       <p className="text-white/50 text-sm mb-8">Visão geral do hub SENTIENT-AI</p>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8" data-testid="metrics-cards">
+      <div className="grid grid-cols-1 min-[380px]:grid-cols-2 lg:grid-cols-5 gap-4 mb-8" data-testid="metrics-cards">
         {cards.map((c) => (
           <div key={c.label} className="rounded-xl bg-[#0F0F13] border border-white/10 p-5">
             <c.icon className="w-5 h-5 text-[#FF7A59] mb-3" />

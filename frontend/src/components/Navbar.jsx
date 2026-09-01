@@ -84,6 +84,9 @@ export const Navbar = () => {
             <Link key={l.to} to={l.to} onClick={() => setMenu(false)} className="text-white/80 hover:text-[#FF7A59]">{l.label}</Link>
           ))}
           <div className="h-px bg-white/10" />
+          <button onClick={toggle} className="flex items-center gap-2 text-left text-white/80" data-testid="lang-toggle-mobile">
+            <Globe className="w-4 h-4" /> Idioma: {lang.toUpperCase()}
+          </button>
           {user ? (
             <>
               {user.role === "admin" && <Link to="/admin" onClick={() => setMenu(false)} className="text-white/80">{t("admin")}</Link>}

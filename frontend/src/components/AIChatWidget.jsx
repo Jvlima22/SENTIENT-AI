@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { MessageSquare, X, Send } from "lucide-react";
 import { API } from "@/lib/api";
 
 export const AIChatWidget = () => {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
     { role: "assistant", content: "Olá! Sou o assistente do SENTIENT-AI. Como posso ajudar você a encontrar recursos hoje?" },
@@ -15,6 +17,12 @@ export const AIChatWidget = () => {
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, open]);
+
+  const isSkillDetail = location.pathname.startsWith("/skills/");
+
+  useEffect(() => {
+    if (isSkillDetail) setOpen(false);
+  }, [isSkillDetail]);
 
   const send = async () => {
     const text = input.trim();
@@ -52,16 +60,18 @@ export const AIChatWidget = () => {
     }
   };
 
+  if (isSkillDetail) return null;
+
   return (
     <>
       <button onClick={() => setOpen(!open)} data-testid="ai-chat-toggle"
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#FF7A59] flex items-center justify-center cyan-glow hover:scale-105 transition-transform">
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#FF7A59] flex items-center justify-center cyan-glow hover:scale-105 transition-transform shadow-lg">
         {open ? <X className="w-6 h-6 text-black" /> : <MessageSquare className="w-6 h-6 text-black" />}
       </button>
 
       {open && (
         <div data-testid="ai-chat-panel"
-          className="fixed bottom-24 right-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] h-[520px] rounded-2xl glass cyan-glow flex flex-col overflow-hidden border border-[#FF7A59]/30">
+          className="fixed bottom-24 right-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] h-[min(520px,calc(100dvh-8rem))] rounded-2xl glass cyan-glow flex flex-col overflow-hidden border border-[#FF7A59]/30">
           <div className="p-4 border-b border-white/10 flex items-center gap-3 bg-black/40">
             <div className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden p-1.5">
               <img src="/logo-icon.png" alt="" className="w-full h-full object-contain select-none" draggable={false} />

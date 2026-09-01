@@ -103,7 +103,7 @@ export const CommandPalette = () => {
                   {aiLoading ? (
                     <div className="flex items-center gap-2 px-3 py-6 text-white/50 text-sm"><Loader2 className="w-4 h-4 animate-spin text-[#FF7A59]" /> Analisando o catálogo...</div>
                   ) : (
-                    (aiRecs || []).map((p) => <ProductRow key={p.id} p={p} onClick={() => go(`/produto/${p.id}`)} />)
+                    (aiRecs || []).map((p) => <ProductRow key={p.id} p={p} onClick={() => go(`/produto/${p.public_id || p.id}`)} />)
                   )}
                 </div>
               ) : loading && !hasResults ? (
@@ -120,7 +120,7 @@ export const CommandPalette = () => {
                     ))}
                   </div>
                   <SectionLabel icon={Sparkles}>Populares</SectionLabel>
-                  {data.popular.map((p) => <ProductRow key={p.id} p={p} onClick={() => go(`/produto/${p.id}`)} />)}
+                  {data.popular.map((p) => <ProductRow key={p.id} p={p} onClick={() => go(`/produto/${p.public_id || p.id}`)} />)}
                 </div>
               ) : !hasResults ? (
                 <div className="px-3 py-8 text-center text-white/40 text-sm">
@@ -133,12 +133,12 @@ export const CommandPalette = () => {
                 <div data-testid="command-results">
                   {data.products.length > 0 && (
                     <><SectionLabel icon={Package}>Produtos</SectionLabel>
-                      {data.products.map((p) => <ProductRow key={p.id} p={p} onClick={() => go(`/produto/${p.id}`)} />)}</>
+                      {data.products.map((p) => <ProductRow key={p.id} p={p} onClick={() => go(`/produto/${p.public_id || p.id}`)} />)}</>
                   )}
                   {data.skills.length > 0 && (
                     <><SectionLabel icon={Terminal}>Skills</SectionLabel>
                       {data.skills.map((s) => (
-                        <Row key={s.id} onClick={() => go("/skills")} testid={`command-skill-${s.id}`}
+                        <Row key={s.id} onClick={() => go(`/skills/${s.public_id || s.id}`)} testid={`command-skill-${s.id}`}
                           icon={<Terminal className="w-4 h-4 text-[#FF7A59]" />} title={s.title} sub={s.category} />
                       ))}</>
                   )}
@@ -152,6 +152,13 @@ export const CommandPalette = () => {
                 </div>
               )}
             </div>
+            {!aiMode && q.trim() && (
+              <div className="sm:hidden px-3 pb-3">
+                <button onClick={runAI} disabled={aiLoading} className="w-full rounded-xl border border-[#FF7A59]/30 bg-[#FF7A59]/10 px-3 py-2.5 text-sm text-[#ffab96] disabled:opacity-50">
+                  <Sparkles className="inline w-4 h-4 mr-2" /> Perguntar à IA
+                </button>
+              </div>
+            )}
 
             {/* footer */}
             <div className="flex items-center justify-between px-5 py-3 border-t border-white/10 text-[11px] text-white/35 font-mono-code">

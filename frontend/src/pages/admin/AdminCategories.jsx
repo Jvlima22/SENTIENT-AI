@@ -22,7 +22,7 @@ export default function AdminCategories() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div><h1 className="font-display text-2xl">Categorias</h1><p className="text-white/50 text-sm">{cats.length} categorias</p></div>
         <button onClick={() => setOpen(true)} data-testid="new-category-btn" className="bg-[#FF7A59] text-black font-medium px-4 py-2.5 rounded-full hover:bg-white transition-colors flex items-center gap-2 text-sm"><Plus className="w-4 h-4" /> Nova</button>
       </div>

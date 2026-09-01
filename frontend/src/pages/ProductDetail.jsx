@@ -20,6 +20,7 @@ export default function ProductDetail() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", interest: "" });
   const [submitting, setSubmitting] = useState(false);
   const [unlocked, setUnlocked] = useState(null);
+  const internalProductId = product?.id || id;
 
   useEffect(() => {
     api.get(`/products/${id}`).then((r) => { setProduct(r.data); setLoading(false); })
@@ -40,7 +41,7 @@ export default function ProductDetail() {
   const submitLead = async () => {
     setSubmitting(true);
     try {
-      const { data } = await api.post("/leads", { ...form, product_id: id });
+      const { data } = await api.post("/leads", { ...form, product_id: internalProductId });
       setUnlocked(data.download_url || product.download_url);
       setShowLead(false);
       toast.success("Acesso liberado! Confira abaixo.");
@@ -49,7 +50,7 @@ export default function ProductDetail() {
   };
 
   const handleBuy = async () => {
-    if (user) { try { await api.post("/purchases/track", { product_id: id }); } catch {} }
+    if (user) { try { await api.post("/purchases/track", { product_id: internalProductId }); } catch {} }
     if (product.checkout_url) window.open(product.checkout_url, "_blank");
     else toast.info("Checkout indisponível no momento");
   };
@@ -60,14 +61,14 @@ export default function ProductDetail() {
   const isFree = product.type === "free";
 
   return (
-    <div className="max-w-[1400px] mx-auto px-5 md:px-8 py-10">
+    <div className="max-w-[1400px] mx-auto px-5 md:px-8 py-7 sm:py-10">
       <Link to="/" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-[#FF7A59] mb-8 transition-colors" data-testid="back-link">
         <ArrowLeft className="w-4 h-4" /> Voltar ao marketplace
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
         <div className="lg:col-span-3">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4">
             <span className="text-xs uppercase tracking-wide text-[#FF7A59] font-mono-code">{product.category_name}</span>
             {isFree ? (
               <span className="border border-white/25 text-white/70 text-xs rounded-full px-2.5 py-1 font-mono-code">{t("free")}</span>
@@ -76,7 +77,7 @@ export default function ProductDetail() {
             )}
           </div>
           <h1 className="font-display font-700 text-3xl md:text-4xl leading-tight tracking-tight mb-4" data-testid="product-title">{product.title}</h1>
-          <div className="flex items-center gap-4 text-sm text-white/40 mb-8 font-mono-code">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/40 mb-8 font-mono-code">
             <span className="flex items-center gap-1.5"><Eye className="w-4 h-4" /> {product.views || 0} visualizações</span>
             {isFree && <span className="flex items-center gap-1.5"><Download className="w-4 h-4" /> {product.downloads || 0} downloads</span>}
           </div>
@@ -95,7 +96,7 @@ export default function ProductDetail() {
         </div>
 
         <div className="lg:col-span-2">
-          <div className="sticky top-24 rounded-2xl glass p-6 border border-white/10">
+          <div className="lg:sticky lg:top-24 rounded-2xl glass p-5 sm:p-6 border border-white/10">
             {isFree ? (
               <>
                 <p className="text-3xl font-display font-700 mb-1">Grátis</p>

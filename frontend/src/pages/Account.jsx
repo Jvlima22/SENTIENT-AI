@@ -36,18 +36,18 @@ export default function Account() {
 
   return (
     <div className="max-w-[1100px] mx-auto px-5 md:px-8 py-12">
-      <div className="flex items-center gap-4 mb-10">
-        <div className="w-16 h-16 rounded-full bg-[#FF7A59]/10 border border-[#FF7A59]/30 flex items-center justify-center overflow-hidden">
+      <div className="flex items-center gap-3 sm:gap-4 mb-8 sm:mb-10">
+        <div className="w-12 h-12 sm:w-16 sm:h-16 shrink-0 rounded-full bg-[#FF7A59]/10 border border-[#FF7A59]/30 flex items-center justify-center overflow-hidden">
           {user.picture ? <img src={user.picture} alt="" className="w-full h-full object-cover" /> : <User className="w-8 h-8 text-[#FF7A59]" />}
         </div>
         <div>
-          <h1 className="font-display text-2xl md:text-3xl">{user.name}</h1>
-          <p className="text-white/50 text-sm font-mono-code">{user.email}</p>
+          <h1 className="font-display text-lg sm:text-2xl md:text-3xl">{user.name}</h1>
+          <p className="text-white/50 text-xs sm:text-sm font-mono-code break-all">{user.email}</p>
         </div>
       </div>
 
       <Tabs defaultValue="downloads" className="w-full">
-        <TabsList className="bg-white/5 border border-white/10 rounded-full p-1 mb-8">
+        <TabsList className="w-full max-w-full overflow-x-auto justify-start no-scrollbar bg-white/5 border border-white/10 rounded-full p-1 mb-8">
           <TabsTrigger value="downloads" data-testid="tab-downloads" className="rounded-full data-[state=active]:bg-[#FF7A59] data-[state=active]:text-black px-5">
             <Download className="w-4 h-4 mr-2" /> Downloads
           </TabsTrigger>
@@ -86,7 +86,7 @@ export default function Account() {
               )}
             </TabsContent>
             <TabsContent value="profile" data-testid="profile-panel">
-              <div className="max-w-md space-y-4 rounded-2xl glass p-6 border border-white/10">
+              <div className="max-w-md space-y-4 rounded-2xl glass p-4 sm:p-6 border border-white/10">
                 <div>
                   <label className="text-sm text-white/60 mb-1.5 block">Nome</label>
                   <input value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} data-testid="profile-name"
@@ -111,8 +111,8 @@ export default function Account() {
 }
 
 const HistoryRow = ({ item, action }) => (
-  <div className="flex items-center gap-4 rounded-xl bg-[#0F0F13] border border-white/10 p-3">
-    <img src={item.thumbnail} alt="" className="w-16 h-16 rounded-lg object-cover bg-white/5" />
+  <div className="flex items-center gap-3 sm:gap-4 rounded-xl bg-[#0F0F13] border border-white/10 p-3">
+    <img src={item.thumbnail} alt="" className="w-12 h-12 sm:w-16 sm:h-16 shrink-0 rounded-lg object-cover bg-white/5" />
     <div className="flex-1 min-w-0">
       <Link to={`/produto/${item.product_id}`} className="font-display text-sm hover:text-[#FF7A59] transition-colors line-clamp-1">{item.product_title}</Link>
       <p className="text-xs text-white/40 font-mono-code mt-1">{new Date(item.created_at).toLocaleDateString("pt-BR")}</p>
@@ -129,7 +129,7 @@ const Empty = ({ text, link = "/", label = "Ir ao marketplace" }) => (
 );
 
 const CollectionCard = ({ skill }) => (
-  <Link to="/skills" className="block rounded-xl bg-[#0F0F13] border border-white/10 p-5 hover:border-[#FF7A59]/45 transition-colors">
+  <Link to={`/skills/${skill.public_id || skill.id}`} className="block rounded-xl bg-[#0F0F13] border border-white/10 p-5 hover:border-[#FF7A59]/45 transition-colors">
     <div className="flex items-start justify-between gap-3"><span className="text-[10px] uppercase tracking-[0.13em] text-[#FF7A59] font-mono-code">{skill.category}</span><Bookmark className="w-4 h-4 text-[#1689E8] fill-current" /></div>
     <h3 className="font-display text-base mt-3">{skill.title}</h3>
     <p className="text-sm text-white/50 mt-2 line-clamp-2">{skill.description}</p>

@@ -40,7 +40,7 @@ export default function AdminProducts() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div><h1 className="font-display text-2xl">Produtos</h1><p className="text-white/50 text-sm">{products.length} itens</p></div>
         <button onClick={openNew} data-testid="new-product-btn" className="bg-[#FF7A59] text-black font-medium px-4 py-2.5 rounded-full hover:bg-white transition-colors flex items-center gap-2 text-sm">
           <Plus className="w-4 h-4" /> Novo produto
@@ -48,8 +48,8 @@ export default function AdminProducts() {
       </div>
 
       {loading ? <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-[#FF7A59] animate-spin" /></div> : (
-        <div className="rounded-xl border border-white/10 overflow-hidden" data-testid="products-table">
-          <table className="w-full text-sm">
+        <div className="rounded-xl border border-white/10 overflow-x-auto" data-testid="products-table">
+          <table className="w-full min-w-[560px] text-sm">
             <thead className="bg-white/5 text-white/50 text-xs uppercase font-mono-code">
               <tr><th className="text-left px-4 py-3">Produto</th><th className="text-left px-4 py-3 hidden md:table-cell">Categoria</th><th className="text-left px-4 py-3">Tipo</th><th className="text-right px-4 py-3">Ações</th></tr>
             </thead>
@@ -87,7 +87,7 @@ export default function AdminProducts() {
                 <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} data-testid="prod-desc"
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50 transition-colors" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm text-white/60 mb-1.5 block">Categoria</label>
                   <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })} data-testid="prod-cat"

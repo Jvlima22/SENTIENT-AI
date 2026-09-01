@@ -15,7 +15,7 @@ export default function Community() {
         <Users className="w-6 h-6 text-[#FF7A59]" />
         <span className="text-xs uppercase tracking-wide text-[#FF7A59] font-mono-code">Conecte-se</span>
       </div>
-      <h1 className="font-display font-800 text-4xl md:text-5xl tracking-tight mb-4">Comunidade</h1>
+      <h1 className="font-display font-800 text-3xl sm:text-4xl md:text-5xl tracking-tight mb-4">Comunidade</h1>
       <p className="text-white/55 max-w-2xl mb-12 leading-relaxed">Participe dos nossos canais, receba novidades em primeira mão e troque ideias com a comunidade SENTIENT-AI.</p>
 
       {loading ? (

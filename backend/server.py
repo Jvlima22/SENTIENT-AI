@@ -83,6 +83,24 @@ def new_id() -> str:
     return str(uuid.uuid4())
 
 
+async def new_public_id(collection) -> str:
+    """Gera um identificador curto, apropriado para URLs públicas."""
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"
+    while True:
+        public_id = "".join(secrets.choice(alphabet) for _ in range(5))
+        if not await collection.find_one({"public_id": public_id}, {"_id": 1}):
+            return public_id
+
+
+async def ensure_public_ids(collection):
+    """Atribui IDs públicos a itens antigos sem alterar seus IDs internos."""
+    async for item in collection.find({"public_id": {"$exists": False}}, {"_id": 1}):
+        await collection.update_one(
+            {"_id": item["_id"], "public_id": {"$exists": False}},
+            {"$set": {"public_id": await new_public_id(collection)}},
+        )
+
+
 def get_jwt_secret() -> str:
     return os.environ["JWT_SECRET"]
 
@@ -391,7 +409,7 @@ async def list_products(category: Optional[str] = None, type: Optional[str] = No
 async def get_product(product_id: str):
     from pymongo import ReturnDocument
     p = await db.products.find_one_and_update(
-        {"id": product_id}, {"$inc": {"views": 1}},
+        {"$or": [{"id": product_id}, {"public_id": product_id}]}, {"$inc": {"views": 1}},
         projection={"_id": 0}, return_document=ReturnDocument.AFTER)
     if not p:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
@@ -402,6 +420,7 @@ async def get_product(product_id: str):
 async def create_product(data: ProductInput, admin: dict = Depends(get_admin_user)):
     doc = data.model_dump()
     doc["id"] = new_id()
+    doc["public_id"] = await new_public_id(db.products)
     doc["views"] = 0
     doc["downloads"] = 0
     doc["created_at"] = now_iso()
@@ -586,10 +605,21 @@ async def list_skills(category: Optional[str] = None, search: Optional[str] = No
     return await db.skills.find(query, {"_id": 0}).to_list(1000)
 
 
+@api_router.get("/skills/{skill_id}")
+async def get_skill(skill_id: str):
+    skill = await db.skills.find_one(
+        {"$or": [{"id": skill_id}, {"public_id": skill_id}]}, {"_id": 0}
+    )
+    if not skill:
+        raise HTTPException(status_code=404, detail="Skill não encontrada")
+    return skill
+
+
 @api_router.post("/skills")
 async def create_skill(data: SkillInput, admin: dict = Depends(get_admin_user)):
     doc = data.model_dump()
     doc["id"] = new_id()
+    doc["public_id"] = await new_public_id(db.skills)
     doc["created_at"] = now_iso()
     await db.skills.insert_one(doc)
     doc.pop("_id", None)
@@ -1033,6 +1063,8 @@ async def _run_startup_tasks():
     await db.users.create_index("email", unique=True)
     await db.users.create_index("user_id", unique=True)
     await db.skill_collections.create_index([("user_id", 1), ("skill_id", 1)], unique=True)
+    await db.products.create_index("public_id", unique=True, sparse=True)
+    await db.skills.create_index("public_id", unique=True, sparse=True)
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@sentient-ai.com").lower()
     admin_pass = os.environ.get("ADMIN_PASSWORD", "Admin@123")
     existing = await db.users.find_one({"email": admin_email})
@@ -1044,6 +1076,8 @@ async def _run_startup_tasks():
     elif not verify_password(admin_pass, existing.get("password_hash", "")):
         await db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_pass), "role": "admin"}})
     await seed_data()
+    await ensure_public_ids(db.products)
+    await ensure_public_ids(db.skills)
 
 
 @app.on_event("shutdown")
@@ -1069,7 +1103,7 @@ async def seed_data():
         for p in SEED_PRODUCTS:
             cat = cat_map.get(p["cat_slug"], {})
             await db.products.insert_one({
-                "id": new_id(), "title": p["title"], "short_description": p["short_description"],
+                "id": new_id(), "public_id": await new_public_id(db.products), "title": p["title"], "short_description": p["short_description"],
                 "description": p["description"], "category_id": cat.get("id"),
                 "category_name": cat.get("name", ""), "type": p["type"], "price": p["price"],
                 "thumbnail": p["thumbnail"], "checkout_url": p.get("checkout_url", ""),
@@ -1084,7 +1118,7 @@ async def seed_data():
             {"$set": {**s, "kind": s.get("kind", "Prompt"),
                       "level": s.get("level", "Iniciante"),
                       "source": "sentient-curated", "updated_at": now_iso()},
-             "$setOnInsert": {"id": new_id(), "created_at": now_iso()}},
+            "$setOnInsert": {"id": new_id(), "public_id": await new_public_id(db.skills), "created_at": now_iso()}},
             upsert=True,
         )
     if await db.community_links.count_documents({}) == 0:

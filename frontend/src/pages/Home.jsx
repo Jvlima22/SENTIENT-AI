@@ -65,7 +65,7 @@ export default function Home() {
         <div className="aurora aurora-b" style={{ width: 480, height: 480, background: "radial-gradient(circle, rgba(160,140,255,0.30), transparent 70%)", top: -60, right: -60 }} />
         <div className="aurora" style={{ width: 360, height: 360, background: "radial-gradient(circle, rgba(255,122,89,0.22), transparent 70%)", bottom: -120, left: "40%" }} />
 
-        <div className="relative z-10 max-w-[1400px] mx-auto px-5 md:px-8 py-24 md:py-36 text-center">
+        <div className="relative z-10 max-w-[1400px] mx-auto px-5 md:px-8 py-16 sm:py-24 md:py-36 text-center">
           <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 px-4 py-1.5 mb-8" data-testid="hero-tag">
             <Sparkles className="w-4 h-4 text-[#FF7A59]" />
@@ -73,7 +73,7 @@ export default function Home() {
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.05 }}
-            className="font-display font-800 text-4xl sm:text-6xl lg:text-7xl leading-[1.02] tracking-tight max-w-4xl mx-auto mb-6">
+            className="font-display font-800 text-3xl min-[380px]:text-4xl sm:text-6xl lg:text-7xl leading-[1.08] sm:leading-[1.02] tracking-tight max-w-4xl mx-auto mb-6">
             Descubra, acesse e escale com <span className="gradient-text">recursos digitais</span> inteligentes
           </motion.h1>
 
@@ -94,7 +94,7 @@ export default function Home() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.35 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto mt-20">
+            className="grid grid-cols-2 md:grid-cols-4 gap-5 sm:gap-6 max-w-2xl mx-auto mt-14 sm:mt-20">
             {stats.map((s) => (
               <div key={s.label}>
                 <p className="font-display text-2xl md:text-3xl gradient-text">{s.value}</p>

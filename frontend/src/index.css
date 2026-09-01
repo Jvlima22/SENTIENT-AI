@@ -46,6 +46,10 @@
 
 html { scroll-behavior: smooth; }
 
+html, body, #root { min-width: 320px; overflow-x: clip; }
+
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+
 body {
   margin: 0;
   background-color: var(--bg-primary);
@@ -180,3 +184,31 @@ body::before {
 /* esconde a barra de rolagem da faixa de filtros/categorias no mobile, mantendo o scroll funcional */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Mobile foundation: content never escapes the viewport and touch targets stay
+   comfortable without changing the desktop visual hierarchy. */
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .font-display { overflow-wrap: anywhere; }
+  input, select, textarea { font-size: 16px !important; }
+  button, a { touch-action: manipulation; }
+  pre { max-width: 100%; word-break: break-word; }
+
+  [data-testid="navbar"] { position: sticky; }
+  [data-testid="mobile-menu"] { max-height: calc(100vh - 4rem); overflow-y: auto; padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  [data-testid="footer"] { margin-top: 4rem; }
+
+  [data-testid="ai-chat-toggle"] { right: 1rem; bottom: max(1rem, env(safe-area-inset-bottom)); width: 3.25rem; height: 3.25rem; }
+  [data-testid="ai-chat-panel"] { right: .75rem; left: .75rem; bottom: calc(5.25rem + env(safe-area-inset-bottom)); width: auto; height: min(68dvh, 34rem); }
+
+  [data-testid="command-palette"] { width: calc(100vw - 1.5rem); }
+  [data-testid="products-table"] { overflow-x: auto; }
+  [data-testid="products-table"] table { min-width: 560px; }
+  [data-testid="leads-table"] { -webkit-overflow-scrolling: touch; }
+
+  [role="dialog"] { max-height: calc(100dvh - 1.5rem); }
+}
+
+@media (max-width: 380px) {
+  .font-display { letter-spacing: -.05em; }
+}

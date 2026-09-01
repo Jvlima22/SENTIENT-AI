@@ -54,13 +54,13 @@ export default function Login() {
 
 export function AuthShell({ title, subtitle, children }) {
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-5 py-12">
+    <div className="min-h-[calc(100dvh-4rem)] flex items-center justify-center px-4 sm:px-5 py-8 sm:py-12">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
           <Logo height={32} />
         </div>
-        <div className="rounded-2xl glass p-8 border border-white/10">
-          <h1 className="font-display text-2xl mb-1">{title}</h1>
+        <div className="rounded-2xl glass p-5 sm:p-8 border border-white/10">
+          <h1 className="font-display text-xl sm:text-2xl mb-1">{title}</h1>
           <p className="text-sm text-white/50 mb-6">{subtitle}</p>
           {children}
         </div>

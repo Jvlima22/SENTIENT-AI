@@ -7,7 +7,7 @@ export const ProductCard = ({ product, index = 0 }) => {
   const { t } = useI18n();
   const isFree = product.type === "free";
   return (
-    <Link to={`/produto/${product.id}`} data-testid={`product-card-${product.id}`}
+    <Link to={`/produto/${product.public_id || product.id}`} data-testid={`product-card-${product.id}`}
       className="group grid-fade-in block rounded-xl bg-[#0F0F13] border border-white/10 p-4 hover:border-white/25 hover:-translate-y-1 transition-transform transition-colors"
       style={{ animationDelay: `${Math.min(index * 60, 480)}ms` }}>
       <div className="aspect-video rounded-lg overflow-hidden bg-white/5 mb-4 relative">

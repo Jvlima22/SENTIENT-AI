@@ -35,6 +35,7 @@ function AppRouter() {
       <Route path="/" element={<Layout><Home /></Layout>} />
       <Route path="/produto/:id" element={<Layout><ProductDetail /></Layout>} />
       <Route path="/skills" element={<Layout><Skills /></Layout>} />
+      <Route path="/skills/:skillId" element={<Layout><Skills /></Layout>} />
       <Route path="/comunidade" element={<Layout><Community /></Layout>} />
       <Route path="/faq" element={<Layout><FAQ /></Layout>} />
       <Route path="/login" element={<Login />} />

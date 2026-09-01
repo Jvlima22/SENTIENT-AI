@@ -16,7 +16,7 @@ export default function FAQ() {
         <HelpCircle className="w-6 h-6 text-[#FF7A59]" />
         <span className="text-xs uppercase tracking-wide text-[#FF7A59] font-mono-code">Ajuda</span>
       </div>
-      <h1 className="font-display font-800 text-4xl md:text-5xl tracking-tight mb-4">Perguntas Frequentes</h1>
+      <h1 className="font-display font-800 text-3xl sm:text-4xl md:text-5xl tracking-tight mb-4">Perguntas Frequentes</h1>
       <p className="text-white/55 mb-12 leading-relaxed">Tudo o que você precisa saber sobre acesso, pagamentos e recursos.</p>
 
       {loading ? (
