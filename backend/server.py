@@ -122,14 +122,23 @@ def create_access_token(user_id: str, email: str) -> str:
     return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
 
 
-def set_auth_cookie(response: Response, token: str):
+def auth_cookie_settings() -> dict:
     # Em produção o front e a API usam HTTPS; no desenvolvimento local,
     # cookies marcados como Secure não são enviados pelo navegador.
     secure_cookie = os.environ.get("VERCEL") == "1" or os.environ.get("COOKIE_SECURE", "").lower() == "true"
+    return {"httponly": True, "secure": secure_cookie,
+            "samesite": "none" if secure_cookie else "lax", "path": "/"}
+
+
+def set_auth_cookie(response: Response, token: str):
     response.set_cookie(
-        key="access_token", value=token, httponly=True, secure=secure_cookie,
-        samesite="none" if secure_cookie else "lax", max_age=604800, path="/"
+        key="access_token", value=token, max_age=604800, **auth_cookie_settings()
     )
+
+
+def clear_auth_cookie(response: Response):
+    """Remove a sessão usando os mesmos atributos do cookie de autenticação."""
+    response.delete_cookie(key="access_token", **auth_cookie_settings())
 
 
 # ---------------------------------------------------------------------------
@@ -338,7 +347,7 @@ async def auth_session(request: Request):
 
 @api_router.post("/auth/logout")
 async def logout(response: Response):
-    response.delete_cookie("access_token", path="/")
+    clear_auth_cookie(response)
     return {"ok": True}
 
 
