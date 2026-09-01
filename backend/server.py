@@ -123,8 +123,13 @@ def create_access_token(user_id: str, email: str) -> str:
 
 
 def set_auth_cookie(response: Response, token: str):
-    response.set_cookie(key="access_token", value=token, httponly=True, secure=True,
-                        samesite="none", max_age=604800, path="/")
+    # Em produção o front e a API usam HTTPS; no desenvolvimento local,
+    # cookies marcados como Secure não são enviados pelo navegador.
+    secure_cookie = os.environ.get("VERCEL") == "1" or os.environ.get("COOKIE_SECURE", "").lower() == "true"
+    response.set_cookie(
+        key="access_token", value=token, httponly=True, secure=secure_cookie,
+        samesite="none" if secure_cookie else "lax", max_age=604800, path="/"
+    )
 
 
 # ---------------------------------------------------------------------------
