@@ -193,6 +193,12 @@ class SkillInput(BaseModel):
     tags: List[str] = []
     kind: str = "Prompt"
     level: str = "Iniciante"
+    github_stars: Optional[int] = 0
+    github_repo: Optional[str] = None
+    github_url: Optional[str] = None
+    author: Optional[str] = None
+    source: str = "editorial"
+    target_ais: List[str] = ["universal"]
 
 
 class SkillCommentInput(BaseModel):
@@ -604,19 +610,79 @@ async def admin_metrics(admin: dict = Depends(get_admin_user)):
 # ---------------------------------------------------------------------------
 @api_router.get("/skills")
 async def list_skills(category: Optional[str] = None, search: Optional[str] = None,
-                      kind: Optional[str] = None, level: Optional[str] = None):
+                      kind: Optional[str] = None, level: Optional[str] = None,
+                      target_ai: Optional[str] = None, source: Optional[str] = None,
+                      sort: Optional[str] = "stars"):
     query = {}
     if category and category != "all":
         query["category"] = category
     if search:
         query["$or"] = [{"title": {"$regex": search, "$options": "i"}},
                         {"description": {"$regex": search, "$options": "i"}},
-                        {"tags": {"$regex": search, "$options": "i"}}]
+                        {"tags": {"$regex": search, "$options": "i"}},
+                        {"github_repo": {"$regex": search, "$options": "i"}}]
     if kind and kind != "all":
         query["kind"] = kind
     if level and level != "all":
         query["level"] = level
-    return await db.skills.find(query, {"_id": 0}).to_list(1000)
+    if source and source != "all":
+        query["source"] = source
+    if target_ai and target_ai != "all":
+        ai_lower = target_ai.lower()
+        query["$or"] = [
+            {"target_ais": ai_lower},
+            {"target_ais": "universal"},
+            {"tags": ai_lower}
+        ]
+    
+    # Ordenação
+    if sort == "recent":
+        sort_order = [("created_at", -1)]
+    elif sort == "title":
+        sort_order = [("title", 1)]
+    else:  # padrão "stars"
+        sort_order = [("github_stars", -1), ("created_at", -1)]
+        
+    return await db.skills.find(query, {"_id": 0}).sort(sort_order).to_list(1000)
+
+
+async def sync_github_skills_to_db():
+    try:
+        from services.github_skills import get_all_top_github_skills, EXCLUDED_REPOS
+        # Limpa completamente o banco de skills para evitar duplicatas ou legados
+        await db.skills.delete_many({})
+        
+        skills = await get_all_top_github_skills()
+        count = 0
+        seen_repos = set()
+        for s in skills:
+            repo = s.get("github_repo")
+            if not repo or repo in seen_repos or repo in EXCLUDED_REPOS:
+                continue
+            seen_repos.add(repo)
+            
+            public_id = await new_public_id(db.skills)
+            skill_id = new_id()
+            doc = {
+                **s,
+                "id": skill_id,
+                "public_id": public_id,
+                "synced_at": now_iso(),
+                "created_at": now_iso(),
+                "updated_at": now_iso(),
+            }
+            await db.skills.insert_one(doc)
+            count += 1
+        return count
+    except Exception as e:
+        logger.error(f"Erro ao sincronizar skills do GitHub: {e}")
+        return 0
+
+
+@api_router.post("/skills/sync-github")
+async def sync_github_skills_endpoint():
+    count = await sync_github_skills_to_db()
+    return {"ok": True, "synced_count": count, "message": f"{count} skills sincronizadas com sucesso do GitHub."}
 
 
 @api_router.get("/skills/{skill_id}")
@@ -1062,6 +1128,22 @@ else:
 # ---------------------------------------------------------------------------
 # Startup: indexes + seed
 # ---------------------------------------------------------------------------
+async def _periodic_github_sync():
+    """Sincroniza automaticamente as skills do GitHub em background a cada 1 hora (3600 segundos)."""
+    INTERVAL_SECONDS = 3600  # 1 hora
+    while True:
+        try:
+            await asyncio.sleep(INTERVAL_SECONDS)
+            logger.info("Iniciando sincronização periódica automática de skills do GitHub (a cada 1 hora)...")
+            count = await sync_github_skills_to_db()
+            logger.info(f"Sincronização periódica concluída com sucesso: {count} skills sincronizadas.")
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            logger.error(f"Erro na rotina de sincronização periódica de skills: {e}")
+            await asyncio.sleep(60)
+
+
 @app.on_event("startup")
 async def startup():
     if db is None:
@@ -1071,6 +1153,9 @@ async def startup():
         await asyncio.wait_for(_run_startup_tasks(), timeout=8)
     except Exception as e:
         logger.error(f"Startup com banco falhou (app segue no ar, mas rotas de dados podem falhar): {e}")
+    
+    # Inicia a sincronização automática periódica a cada 2 horas em background
+    asyncio.create_task(_periodic_github_sync())
 
 
 async def _run_startup_tasks():
@@ -1124,17 +1209,7 @@ async def seed_data():
                 "download_url": p.get("download_url", ""), "tags": p["tags"],
                 "featured": p.get("featured", False), "views": p.get("views", 0),
                 "downloads": p.get("downloads", 0), "created_at": now_iso()})
-    # Skills editoriais são sincronizadas por título para que novas versões do
-    # catálogo cheguem também a instalações que já possuem dados iniciais.
-    for s in SEED_SKILLS:
-        await db.skills.update_one(
-            {"title": s["title"]},
-            {"$set": {**s, "kind": s.get("kind", "Prompt"),
-                      "level": s.get("level", "Iniciante"),
-                      "source": "sentient-curated", "updated_at": now_iso()},
-            "$setOnInsert": {"id": new_id(), "public_id": await new_public_id(db.skills), "created_at": now_iso()}},
-            upsert=True,
-        )
+    await sync_github_skills_to_db()
     if await db.community_links.count_documents({}) == 0:
         for l in SEED_COMMUNITY:
             await db.community_links.insert_one({"id": new_id(), **l})

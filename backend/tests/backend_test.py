@@ -112,10 +112,25 @@ class TestCatalog:
     def test_skills(self):
         r = requests.get(f"{API}/skills", timeout=30)
         assert r.status_code == 200 and isinstance(r.json(), list) and len(r.json()) > 0
+        data = r.json()
+        # Valida que as skills possuem metadados de estrelas e classificação
+        assert any(item.get("github_stars", 0) > 0 for item in data)
+
+    def test_skills_sort_stars(self):
+        r = requests.get(f"{API}/skills?sort=stars", timeout=30)
+        assert r.status_code == 200 and isinstance(r.json(), list) and len(r.json()) > 0
+        data = r.json()
+        stars = [item.get("github_stars", 0) for item in data]
+        assert stars == sorted(stars, reverse=True)
+
+    def test_skills_filter_ai(self):
+        r = requests.get(f"{API}/skills?target_ai=claude", timeout=30)
+        assert r.status_code == 200 and isinstance(r.json(), list)
 
     def test_skills_search(self):
         r = requests.get(f"{API}/skills?search=a", timeout=30)
         assert r.status_code == 200
+
 
     def test_community(self):
         r = requests.get(f"{API}/community", timeout=30)
