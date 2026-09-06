@@ -85,6 +85,21 @@ function formatStars(count) {
   return count.toString();
 }
 
+function dedupeSkills(list) {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set();
+  return list.filter((item) => {
+    if (!item) return false;
+    const repo = (item.github_repo || "").toLowerCase().trim();
+    const title = (item.title || "").toLowerCase().trim();
+    const id = item.id || item.public_id || "";
+    const key = repo || title || id;
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export default function Skills() {
   const { t } = useI18n();
   const { user } = useAuth();
@@ -125,7 +140,7 @@ export default function Skills() {
   const fetchCatalog = () => {
     api
       .get("/skills")
-      .then((r) => setCatalog(r.data))
+      .then((r) => setCatalog(dedupeSkills(r.data)))
       .catch(() => setCatalog([]));
   };
 
@@ -160,7 +175,7 @@ export default function Skills() {
     const id = setTimeout(() => {
       api
         .get("/skills", { params })
-        .then((r) => setSkills(r.data))
+        .then((r) => setSkills(dedupeSkills(r.data)))
         .catch(() => {
           setSkills([]);
           toast.error("Não foi possível carregar as skills.");

@@ -643,7 +643,21 @@ async def list_skills(category: Optional[str] = None, search: Optional[str] = No
     else:  # padrão "stars"
         sort_order = [("github_stars", -1), ("created_at", -1)]
         
-    return await db.skills.find(query, {"_id": 0}).sort(sort_order).to_list(1000)
+    raw_skills = await db.skills.find(query, {"_id": 0}).sort(sort_order).to_list(1000)
+    
+    # Deduplicação estrita para garantir unicidade absoluta na resposta
+    deduped = []
+    seen = set()
+    for s in raw_skills:
+        repo = (s.get("github_repo") or "").strip().lower()
+        title = (s.get("title") or "").strip().lower()
+        key = repo or title or s.get("id") or s.get("public_id")
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        deduped.append(s)
+        
+    return deduped
 
 
 async def sync_github_skills_to_db():
@@ -654,12 +668,25 @@ async def sync_github_skills_to_db():
         
         skills = await get_all_top_github_skills()
         count = 0
-        seen_repos = set()
+        seen_repos = set(r.lower().strip() for r in EXCLUDED_REPOS if r)
+        seen_titles = set()
+        seen_urls = set()
+        
         for s in skills:
-            repo = s.get("github_repo")
-            if not repo or repo in seen_repos or repo in EXCLUDED_REPOS:
+            repo = (s.get("github_repo") or "").strip()
+            repo_lower = repo.lower()
+            title = (s.get("title") or "").strip()
+            title_lower = title.lower()
+            url = (s.get("github_url") or "").strip().lower()
+            
+            if not repo or repo_lower in seen_repos or (title_lower and title_lower in seen_titles) or (url and url in seen_urls):
                 continue
-            seen_repos.add(repo)
+                
+            seen_repos.add(repo_lower)
+            if title_lower:
+                seen_titles.add(title_lower)
+            if url:
+                seen_urls.add(url)
             
             public_id = await new_public_id(db.skills)
             skill_id = new_id()
@@ -673,6 +700,8 @@ async def sync_github_skills_to_db():
             }
             await db.skills.insert_one(doc)
             count += 1
+            
+        logger.info(f"Sincronização de skills concluída com sucesso: {count} skills únicas.")
         return count
     except Exception as e:
         logger.error(f"Erro ao sincronizar skills do GitHub: {e}")

@@ -879,23 +879,47 @@ async def fetch_github_topic_skills(topic: str = "ai-agents", min_stars: int = 5
 async def get_all_top_github_skills() -> List[Dict[str, Any]]:
     """Retorna lista de skills onde cada item tem um repositório GitHub público ÚNICO."""
     all_skills = []
-    seen_repos = set(EXCLUDED_REPOS)
+    seen_repos = set(r.lower().strip() for r in EXCLUDED_REPOS if r)
+    seen_titles = set()
+    seen_urls = set()
     
-    # 1. Adiciona catálogo curado garantindo que cada repo seja único
+    # 1. Adiciona catálogo curado garantindo unicidade absoluta por repositório, título e URL
     for skill in TOP_GITHUB_CURATED_SKILLS:
-        repo = skill.get("github_repo")
-        if repo and repo not in seen_repos:
-            all_skills.append(skill)
-            seen_repos.add(repo)
+        repo = (skill.get("github_repo") or "").strip()
+        repo_lower = repo.lower()
+        title = (skill.get("title") or "").strip()
+        title_lower = title.lower()
+        url = (skill.get("github_url") or "").strip().lower()
+        
+        if not repo or repo_lower in seen_repos or (title_lower and title_lower in seen_titles) or (url and url in seen_urls):
+            continue
+            
+        all_skills.append(skill)
+        seen_repos.add(repo_lower)
+        if title_lower:
+            seen_titles.add(title_lower)
+        if url:
+            seen_urls.add(url)
     
-    # 2. Tenta complementar dinamicamente com repositórios adicionais sem duplicatas
+    # 2. Tenta complementar dinamicamente apenas com repositórios adicionais não vistos
     try:
         dynamic_skills = await fetch_github_topic_skills("llm-tools", min_stars=500)
         for ds in dynamic_skills:
-            repo = ds.get("github_repo")
-            if repo and repo not in seen_repos:
-                all_skills.append(ds)
-                seen_repos.add(repo)
+            repo = (ds.get("github_repo") or "").strip()
+            repo_lower = repo.lower()
+            title = (ds.get("title") or "").strip()
+            title_lower = title.lower()
+            url = (ds.get("github_url") or "").strip().lower()
+            
+            if not repo or repo_lower in seen_repos or (title_lower and title_lower in seen_titles) or (url and url in seen_urls):
+                continue
+                
+            all_skills.append(ds)
+            seen_repos.add(repo_lower)
+            if title_lower:
+                seen_titles.add(title_lower)
+            if url:
+                seen_urls.add(url)
     except Exception as e:
         logger.info(f"Usando catálogo curado de skills do GitHub: {e}")
         
