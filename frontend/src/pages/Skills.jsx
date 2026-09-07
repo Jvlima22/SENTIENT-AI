@@ -191,6 +191,74 @@ async function downloadSkillCardPng(skill) {
   }
 }
 
+async function downloadSkillDetailPng(skill) {
+  const width = 1400;
+  const padding = 76;
+  const titleLines = wrapSvgText(skill.title, 54);
+  const descriptionLines = wrapSvgText(skill.description || "", 112);
+  const promptLines = wrapSvgText(skill.command || "", 112);
+  const headerY = 146;
+  const descriptionY = headerY + titleLines.length * 54 + 38;
+  const tabsY = descriptionY + descriptionLines.length * 30 + 70;
+  const promptY = tabsY + 94;
+  const promptHeight = Math.max(220, promptLines.length * 29 + 58);
+  const commentsY = promptY + promptHeight + 86;
+  const footerY = commentsY + 142;
+  const height = footerY + 112;
+  const stars = formatStars(skill.github_stars) || "—";
+  const repo = skill.github_repo || "SENTIENT-AI";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    <style>
+      .bg{fill:#101015}.panel{fill:#101015;stroke:#34343e;stroke-width:2}.eyebrow{fill:#FF8065;font:600 17px Arial;letter-spacing:3px}.title{fill:#fff;font:700 42px Arial}.muted{fill:#a7a4ae;font:400 21px Arial}.tab{fill:#eeeef2;font:600 18px Arial}.tab-muted{fill:#777580;font:600 18px Arial}.prompt-box{fill:#050508;stroke:#292932;stroke-width:2}.prompt{fill:#d0cdd6;font:400 20px monospace}.repo{fill:#777580;font:400 17px monospace}.star-bg{fill:#332d08;stroke:#7a6814;stroke-width:1}.star{fill:#FFD700;font:600 17px monospace}.label{fill:#fff;font:700 20px Arial}.comment{fill:#777580;font:400 17px Arial}.footer{fill:#bcb9c2;font:500 17px Arial}.footer-accent{fill:#000;font:600 18px Arial}
+    </style>
+    <rect width="100%" height="100%" class="bg"/>
+    <rect x="34" y="34" width="${width - 68}" height="${height - 68}" rx="24" class="panel"/>
+    <text x="${padding}" y="86" class="eyebrow">${escapeSvg(skill.category || "SKILL")} · ${escapeSvg(skill.kind || "PROMPT")}</text>
+    <rect x="${width - 320}" y="58" width="182" height="38" rx="19" class="star-bg"/>
+    <text x="${width - 300}" y="83" class="star">★ ${escapeSvg(stars)} estrelas</text>
+    <text x="${width - padding}" y="84" text-anchor="end" class="repo">${escapeSvg(repo)}</text>
+    ${svgText(titleLines, padding, headerY, 54, "title")}
+    ${svgText(descriptionLines, padding, descriptionY, 30, "muted")}
+    <line x1="${padding}" y1="${tabsY - 28}" x2="${width - padding}" y2="${tabsY - 28}" stroke="#292932"/>
+    <text x="${padding}" y="${tabsY + 22}" class="tab">›  Prompt &amp; Conteúdo</text>
+    <text x="${padding + 280}" y="${tabsY + 22}" class="tab-muted">▦  Conectar via MCP</text>
+    <text x="${padding + 590}" y="${tabsY + 22}" class="tab-muted">◷  Metadados &amp; Fonte</text>
+    <line x1="${padding}" y1="${tabsY + 42}" x2="${padding + 230}" y2="${tabsY + 42}" stroke="#FF8065" stroke-width="3"/>
+    <rect x="${width - padding - 176}" y="${tabsY + 58}" width="176" height="42" rx="21" fill="#fff"/>
+    <text x="${width - padding - 88}" y="${tabsY + 85}" text-anchor="middle" class="footer-accent">▶  Executar na IA</text>
+    <rect x="${padding}" y="${promptY - 36}" width="${width - padding * 2}" height="${promptHeight}" rx="20" class="prompt-box"/>
+    ${svgText(promptLines, padding + 28, promptY + 8, 29, "prompt")}
+    <line x1="${padding}" y1="${commentsY - 30}" x2="${width - padding}" y2="${commentsY - 30}" stroke="#292932"/>
+    <text x="${padding}" y="${commentsY + 8}" class="label">◌  Comentários da Comunidade (0)</text>
+    <rect x="${padding}" y="${commentsY + 34}" width="${width - padding * 2}" height="64" rx="14" fill="#15151b" stroke="#494751" stroke-dasharray="7 7"/>
+    <text x="${padding + 24}" y="${commentsY + 73}" class="comment">Entre na sua conta para participar da conversa e avaliar esta skill.</text>
+    <line x1="34" y1="${footerY - 30}" x2="${width - 34}" y2="${footerY - 30}" stroke="#292932"/>
+    <text x="${width - padding}" y="${footerY + 38}" text-anchor="end" class="footer">SENTIENT-AI  •  PROMPT COMPLETO</text>
+  </svg>`;
+  const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  try {
+    const image = new Image();
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = reject;
+      image.src = url;
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = width * 2;
+    canvas.height = height * 2;
+    const context = canvas.getContext("2d");
+    context.scale(2, 2);
+    context.drawImage(image, 0, 0);
+    const link = document.createElement("a");
+    link.href = canvas.toDataURL("image/png");
+    link.download = `${(skill.title || "skill").replace(/[^a-z0-9À-ÿ]+/gi, "-").replace(/^-|-$/g, "")}-detalhe.png`;
+    link.click();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 function dedupeSkills(list) {
   if (!Array.isArray(list)) return [];
   const seen = new Set();
@@ -1076,8 +1144,8 @@ function SkillCard({ skill, index, copied, onCopy, onOpen, onDownloadPng }) {
               onDownloadPng(skill).catch(() => toast.error("Não foi possível gerar o PNG."));
             }}
             className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/[0.06] hover:bg-[#FF7A59]/15 border border-white/15 hover:border-[#FF7A59]/50 text-white/70 hover:text-white transition-all shadow-sm"
-            title="Baixar card completo em PNG"
-            aria-label="Baixar card completo em PNG"
+            title="Baixar modelo menor em PNG"
+            aria-label="Baixar modelo menor em PNG"
           >
             <Download className="w-4 h-4" />
           </button>
@@ -1464,15 +1532,15 @@ function SkillDialog({ skill, copied, onCopy, onClose }) {
           <footer className="flex shrink-0 justify-end gap-3 border-t border-white/10 bg-[#101015]/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:p-5">
             <button
               onClick={() =>
-                downloadSkillCardPng(skill).catch(() =>
+                downloadSkillDetailPng(skill).catch(() =>
                   toast.error("Não foi possível gerar o PNG.")
                 )
               }
-              title="Baixar card completo em PNG"
+              title="Baixar modelo maior em PNG"
               className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-full border border-white/15 text-white/75 px-5 py-2.5 text-sm hover:border-[#FF7A59]/60 hover:text-white transition-colors"
             >
               <Download className="w-4 h-4" />
-              Baixar PNG
+              Baixar modelo maior (PNG)
             </button>
             <button
               onClick={copyPrompt}
