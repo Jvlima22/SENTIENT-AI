@@ -85,6 +85,112 @@ function formatStars(count) {
   return count.toString();
 }
 
+function escapeSvg(value = "") {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function wrapSvgText(value = "", maxChars = 82) {
+  const lines = [];
+  String(value).split(/\r?\n/).forEach((paragraph) => {
+    if (!paragraph.trim()) {
+      lines.push("");
+      return;
+    }
+    let line = "";
+    paragraph.split(/\s+/).forEach((word) => {
+      const candidate = line ? `${line} ${word}` : word;
+      if (candidate.length > maxChars && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = candidate;
+      }
+    });
+    if (line) lines.push(line);
+  });
+  return lines.length ? lines : [""];
+}
+
+function svgText(lines, x, y, lineHeight, className) {
+  return lines
+    .map(
+      (line, index) =>
+        `<text x="${x}" y="${y + index * lineHeight}" class="${className}">${escapeSvg(line) || "&#160;"}</text>`
+    )
+    .join("");
+}
+
+async function downloadSkillCardPng(skill) {
+  const width = 1024;
+  const padding = 58;
+  const titleLines = wrapSvgText(skill.title, 42);
+  const descriptionLines = wrapSvgText(skill.description || "", 94);
+  const promptLines = wrapSvgText(skill.command || "", 94);
+  const visibleTags = (skill.tags || []).slice(0, 8);
+  const titleY = 132;
+  const descriptionY = titleY + titleLines.length * 48 + 28;
+  const promptY = descriptionY + descriptionLines.length * 28 + 58;
+  const promptHeight = Math.max(130, promptLines.length * 25 + 48);
+  const tagsY = promptY + promptHeight + 40;
+  const footerY = tagsY + 54;
+  const height = footerY + 88;
+  const tagMarkup = visibleTags
+    .map((tag, index) => {
+      const x = padding + index * 118;
+      return `<rect x="${x}" y="${tagsY}" width="108" height="30" rx="15" class="tag-bg"/><text x="${x + 54}" y="${tagsY + 20}" text-anchor="middle" class="tag-text">${escapeSvg(`#${tag}`)}</text>`;
+    })
+    .join("");
+  const stars = formatStars(skill.github_stars) || "—";
+  const repo = skill.github_repo || "SENTIENT-AI";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    <style>
+      .bg{fill:#101015}.card{fill:#0A0A0F;stroke:#34343e;stroke-width:2}.eyebrow{fill:#FF8065;font:600 18px 'Arial';letter-spacing:3px}.title{fill:#fff;font:700 36px 'Arial'}.muted{fill:#a5a3ad;font:400 20px 'Arial'}.prompt-box{fill:#050508;stroke:#292932;stroke-width:2}.prompt{fill:#c8c5cf;font:400 18px monospace}.tag-bg{fill:#17171e;stroke:#363640;stroke-width:1}.tag-text{fill:#a7a4b0;font:400 14px monospace}.repo{fill:#777580;font:400 16px monospace}.star-bg{fill:#332d08;stroke:#7a6814;stroke-width:1}.star{fill:#FFD700;font:600 17px monospace}.footer{fill:#6e6b76;font:400 15px Arial}
+    </style>
+    <rect width="100%" height="100%" class="bg"/>
+    <rect x="28" y="28" width="${width - 56}" height="${height - 56}" rx="28" class="card"/>
+    <text x="${padding}" y="82" class="eyebrow">${escapeSvg(skill.category || "SKILL")}</text>
+    <rect x="${width - 222}" y="54" width="146" height="38" rx="19" class="star-bg"/>
+    <text x="${width - 204}" y="79" class="star">★ ${escapeSvg(stars)}</text>
+    ${svgText(titleLines, padding, titleY, 48, "title")}
+    <text x="${width - padding}" y="82" text-anchor="end" class="repo">${escapeSvg(repo)}</text>
+    ${svgText(descriptionLines, padding, descriptionY, 28, "muted")}
+    <rect x="${padding}" y="${promptY - 32}" width="${width - padding * 2}" height="${promptHeight}" rx="18" class="prompt-box"/>
+    ${svgText(promptLines, padding + 24, promptY + 4, 25, "prompt")}
+    ${tagMarkup}
+    <line x1="${padding}" y1="${footerY - 14}" x2="${width - padding}" y2="${footerY - 14}" stroke="#292932"/>
+    <text x="${padding}" y="${footerY + 28}" class="footer">SENTIENT-AI  •  ${escapeSvg(skill.kind || "Prompt")}  •  ${escapeSvg(repo)}</text>
+    <text x="${width - padding}" y="${footerY + 28}" text-anchor="end" class="footer">PROMPT COMPLETO</text>
+  </svg>`;
+  const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  try {
+    const image = new Image();
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = reject;
+      image.src = url;
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = width * 2;
+    canvas.height = height * 2;
+    const context = canvas.getContext("2d");
+    context.scale(2, 2);
+    context.drawImage(image, 0, 0);
+    const pngUrl = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = pngUrl;
+    link.download = `${(skill.title || "skill").replace(/[^a-z0-9À-ÿ]+/gi, "-").replace(/^-|-$/g, "")}.png`;
+    link.click();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 function dedupeSkills(list) {
   if (!Array.isArray(list)) return [];
   const seen = new Set();
@@ -819,6 +925,7 @@ export default function Skills() {
                 copied={copied}
                 onCopy={copy}
                 onOpen={openSkillDetail}
+                onDownloadPng={downloadSkillCardPng}
               />
             ))}
           </div>
@@ -876,7 +983,7 @@ function FilterSelect({ label, value, onChange, options, allLabel }) {
   );
 }
 
-function SkillCard({ skill, index, copied, onCopy, onOpen }) {
+function SkillCard({ skill, index, copied, onCopy, onOpen, onDownloadPng }) {
   const preview =
     skill.command.length > 190 ? `${skill.command.slice(0, 190)}…` : skill.command;
 
@@ -963,6 +1070,17 @@ function SkillCard({ skill, index, copied, onCopy, onOpen }) {
         </button>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDownloadPng(skill).catch(() => toast.error("Não foi possível gerar o PNG."));
+            }}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/[0.06] hover:bg-[#FF7A59]/15 border border-white/15 hover:border-[#FF7A59]/50 text-white/70 hover:text-white transition-all shadow-sm"
+            title="Baixar card completo em PNG"
+            aria-label="Baixar card completo em PNG"
+          >
+            <Download className="w-4 h-4" />
+          </button>
           <a
             href={repoUrl}
             target="_blank"
@@ -1344,6 +1462,18 @@ function SkillDialog({ skill, copied, onCopy, onClose }) {
 
           {/* Rodapé do Modal */}
           <footer className="flex shrink-0 justify-end gap-3 border-t border-white/10 bg-[#101015]/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:p-5">
+            <button
+              onClick={() =>
+                downloadSkillCardPng(skill).catch(() =>
+                  toast.error("Não foi possível gerar o PNG.")
+                )
+              }
+              title="Baixar card completo em PNG"
+              className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-full border border-white/15 text-white/75 px-5 py-2.5 text-sm hover:border-[#FF7A59]/60 hover:text-white transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Baixar PNG
+            </button>
             <button
               onClick={copyPrompt}
               className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-full bg-[#FF7A59] text-black px-5 py-2.5 text-sm font-medium hover:bg-[#ff8f73] transition-colors"
