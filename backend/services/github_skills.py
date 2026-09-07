@@ -35,8 +35,8 @@ def get_github_headers() -> Dict[str, str]:
 
 CATEGORY_KEYWORDS = {
     "Desenvolvimento": ["code", "refactor", "debug", "test", "git", "api", "architecture", "review", "sql", "backend", "frontend", "dev", "program", "transformer", "serving", "inference"],
-    "Marketing": ["copy", "marketing", "content", "ad", "launch", "seo", "sales", "audience", "campaign", "social", "multimodal", "reader"],
-    "Dados": ["data", "sql", "analytics", "dashboard", "insights", "metrics", "pandas", "visualization", "bi", "rag", "retrieval", "vector"],
+    "Marketing": ["copy", "marketing", "content", "conteudo", "ad", "launch", "seo", "sales", "audience", "campaign", "social", "instagram", "reels", "feed", "branding", "design", "visual", "multimodal", "reader"],
+    "Dados": ["data", "sql", "analytics", "dashboard", "insights", "metrics", "pandas", "spreadsheet", "excel", "planilha", "visualization", "bi", "scrap", "crawler", "crawl", "scraping", "realtime", "real-time", "rag", "retrieval", "vector"],
     "Produtividade": ["summary", "notes", "organize", "email", "meeting", "wisdom", "extract", "tasks", "workflow", "research", "copilot", "local"],
     "Negócios": ["business", "contract", "legal", "strategy", "startup", "pitch", "negotiation", "finance", "proposal", "agents", "company"],
     "Comunicação": ["support", "customer", "message", "translate", "presentation", "speech", "communication", "search", "persona", "chat"],
@@ -823,7 +823,182 @@ Gere um dataset sintético de 5 pares instrucionais:
 1. Pergunta realista e desafiadora formulada pelo usuário.
 2. Resposta detalhada, precisa e estritamente ancorada no documento.
 3. Contexto e atributos taxonômicos para fine-tuning supervisionado (SFT)."""
-    }
+    },
+
+    {
+        "title": "Automação Visual de Processos (Activepieces)",
+        "category": "Automação",
+        "kind": "Workflow No-Code",
+        "level": "Intermediário",
+        "github_stars": 15000,
+        "github_repo": "activepieces/activepieces",
+        "github_url": "https://github.com/activepieces/activepieces",
+        "author": "activepieces",
+        "source": "github",
+        "target_ais": ["universal", "chatgpt", "claude"],
+        "tags": ["automacao", "workflow", "no-code", "integracao", "webhook"],
+        "description": "Converte processos repetitivos em fluxos visuais com gatilhos, ações, integrações, aprovações e tratamento de falhas.",
+        "command": """Modele uma automação para [PROCESSO].
+Gatilho: [EVENTO]. Sistemas envolvidos: [FERRAMENTAS]. Resultado: [RESULTADO].
+
+Entregue o fluxo visual em etapas, payloads de entrada e saída, mapeamento de campos, validações, idempotência, retries, alertas, permissões e critérios de sucesso. Separe ações que exigem aprovação humana."""
+    },
+    {
+        "title": "Agentes com Estado e Ferramentas (LangGraph)",
+        "category": "Automação",
+        "kind": "Orquestração de Agentes",
+        "level": "Avançado",
+        "github_stars": 22000,
+        "github_repo": "langchain-ai/langgraph",
+        "github_url": "https://github.com/langchain-ai/langgraph",
+        "author": "langchain-ai",
+        "source": "github",
+        "target_ais": ["universal", "chatgpt", "claude", "cursor"],
+        "tags": ["automacao", "agentes", "workflow", "estado", "tool-calling"],
+        "description": "Desenha agentes controláveis com estado, ferramentas, checkpoints, interrupções e supervisão humana para fluxos complexos.",
+        "command": """Projete um grafo de agente para [OBJETIVO].
+Entradas: [DADOS]. Ferramentas permitidas: [FERRAMENTAS]. Restrições: [REGRAS].
+
+Defina nós, estado compartilhado, transições, condições de parada, validação de ferramentas, persistência, retries, observabilidade e pontos de aprovação humana. Inclua pseudocódigo executável e casos de erro."""
+    },
+    # --- DESIGN E CONTEÚDO (apresentados como skills normais em Marketing) ---
+    {
+        "title": "Direção de Arte e Layouts Digitais (Penpot)",
+        "category": "Marketing",
+        "kind": "Design de Conteúdo",
+        "level": "Intermediário",
+        "github_stars": 35000,
+        "github_repo": "penpot/penpot",
+        "github_url": "https://github.com/penpot/penpot",
+        "author": "penpot",
+        "source": "github",
+        "target_ais": ["universal", "chatgpt", "claude", "gemini"],
+        "tags": ["design", "direcao-de-arte", "layout", "branding", "social"],
+        "description": "Transforma objetivos de comunicação em direção visual, hierarquia, componentes e layouts consistentes para peças digitais.",
+        "command": """Atue como diretor(a) de arte para conteúdo digital.\nBriefing: [OBJETIVO, PÚBLICO, OFERTA E CANAL]\n\nEntregue:\n1. Conceito visual e referência de direção.\n2. Hierarquia da informação, paleta, tipografia e sistema de espaçamento.\n3. Wireframe textual da peça e variações para feed, story e carrossel.\n4. Checklist de acessibilidade, legibilidade e consistência de marca."""
+    },
+    {
+        "title": "Composição Visual para Posts e Carrosséis (Excalidraw)",
+        "category": "Marketing",
+        "kind": "Design de Conteúdo",
+        "level": "Iniciante",
+        "github_stars": 97000,
+        "github_repo": "excalidraw/excalidraw",
+        "github_url": "https://github.com/excalidraw/excalidraw",
+        "author": "excalidraw",
+        "source": "github",
+        "target_ais": ["universal", "chatgpt", "claude", "gemini"],
+        "tags": ["design", "wireframe", "carrossel", "instagram", "social"],
+        "description": "Planeja a composição de posts e carrosséis com wireframes simples, sequência narrativa e foco visual claro.",
+        "command": """Crie o wireframe de um carrossel para Instagram sobre [TEMA].\nObjetivo: [OBJETIVO]. Público: [PÚBLICO]. Tom: [TOM].\n\nDefina para cada slide: título curto, mensagem principal, elemento visual, posição dos blocos, transição narrativa e CTA final. Mantenha uma ideia por slide e garanta leitura em tela pequena."""
+    },
+    {
+        "title": "Planejamento Editorial para Feed Social (Postiz)",
+        "category": "Marketing",
+        "kind": "Conteúdo Social",
+        "level": "Intermediário",
+        "github_stars": 23000,
+        "github_repo": "gitroomhq/postiz-app",
+        "github_url": "https://github.com/gitroomhq/postiz-app",
+        "author": "gitroomhq",
+        "source": "github",
+        "target_ais": ["universal", "chatgpt", "claude", "gemini"],
+        "tags": ["conteudo", "instagram", "feed", "calendario", "social"],
+        "description": "Estrutura calendários editoriais e peças sociais com formatos, legendas, CTAs e variações adaptadas ao objetivo da marca.",
+        "command": """Monte um calendário editorial de 30 dias para o feed do Instagram.\nNicho: [NICHO]. Oferta: [OFERTA]. Público: [PÚBLICO]. Objetivo: [OBJETIVO]. Frequência: [FREQUÊNCIA].\n\nPara cada publicação entregue: data, pilar, formato, ideia visual, gancho, legenda, CTA, hashtags e métrica de sucesso. Alterne educação, prova, relacionamento e conversão sem repetir ângulos."""
+    },
+    {
+        "title": "Roteiros e Legendas com Voz de Marca (Dify)",
+        "category": "Marketing",
+        "kind": "Redação de Conteúdo",
+        "level": "Intermediário",
+        "github_stars": 75000,
+        "github_repo": "langgenius/dify",
+        "github_url": "https://github.com/langgenius/dify",
+        "author": "langgenius",
+        "source": "github",
+        "target_ais": ["universal", "chatgpt", "claude", "gemini"],
+        "tags": ["texto", "copy", "legenda", "reels", "instagram"],
+        "description": "Produz textos, roteiros e legendas consistentes com a voz de marca para diferentes formatos de conteúdo social.",
+        "command": """Escreva 5 opções de legenda para [FORMATO] sobre [TEMA].\nVoz da marca: [ATRIBUTOS, PALAVRAS PREFERIDAS E RESTRIÇÕES]. Público: [PÚBLICO]. Objetivo: [OBJETIVO].\n\nCada opção deve ter gancho inicial, desenvolvimento escaneável, prova ou exemplo quando aplicável e CTA natural. Inclua uma versão curta, uma educativa e uma de conversão, sem promessas não verificadas."""
+    },
+    # --- SCRAPING E DADOS EM TEMPO REAL (apresentados como skills normais em Dados) ---
+    {
+        "title": "Coleta Web em Tempo Real com Crawlers (Crawl4AI)",
+        "category": "Dados",
+        "kind": "Scraping em Tempo Real",
+        "level": "Avançado",
+        "github_stars": 58000,
+        "github_repo": "unclecode/crawl4ai",
+        "github_url": "https://github.com/unclecode/crawl4ai",
+        "author": "unclecode",
+        "source": "github",
+        "target_ais": ["universal", "chatgpt", "claude", "perplexity"],
+        "tags": ["scraping", "crawler", "tempo-real", "web", "dados"],
+        "description": "Desenha crawlers assíncronos para extrair dados estruturados de páginas dinâmicas com rastreabilidade e controle de mudanças.",
+        "command": """Projete um pipeline de coleta web em tempo real para [FONTES/URLS].\nDados necessários: [CAMPOS]. Frequência: [FREQUÊNCIA].\n\nEntregue arquitetura, estratégia de crawling respeitosa, seletores robustos, normalização do schema, deduplicação, retries com backoff, detecção de mudanças, logs, validações e limites de taxa. Não contorne autenticação, CAPTCHA ou regras de acesso."""
+    },
+    {
+        "title": "Extração Estruturada de Sites (Firecrawl)",
+        "category": "Dados",
+        "kind": "Extração Web",
+        "level": "Intermediário",
+        "github_stars": 55000,
+        "github_repo": "firecrawl/firecrawl",
+        "github_url": "https://github.com/firecrawl/firecrawl",
+        "author": "firecrawl",
+        "source": "github",
+        "target_ais": ["universal", "chatgpt", "claude", "perplexity"],
+        "tags": ["scraping", "extracao", "markdown", "web", "tempo-real"],
+        "description": "Converte páginas web em Markdown ou dados estruturados para pesquisa, monitoramento e aplicações com IA.",
+        "command": """Crie um plano de extração estruturada para [SITES/PÁGINAS].\nSchema de saída: [CAMPOS E TIPOS]. Uso: [RAG, MONITORAMENTO OU ANÁLISE].\n\nDefina escopo de URLs, regras de inclusão/exclusão, schema JSON, tratamento de páginas dinâmicas, validação de campos, atualização incremental, armazenamento do timestamp e verificação de fonte."""
+    },
+    {
+        "title": "Pipelines de Scraping e Monitoramento (Scrapy)",
+        "category": "Dados",
+        "kind": "Pipeline de Dados",
+        "level": "Avançado",
+        "github_stars": 58000,
+        "github_repo": "scrapy/scrapy",
+        "github_url": "https://github.com/scrapy/scrapy",
+        "author": "scrapy",
+        "source": "github",
+        "target_ais": ["universal", "chatgpt", "claude", "cursor"],
+        "tags": ["scraping", "scrapy", "pipeline", "dados", "crawler"],
+        "description": "Planeja spiders e pipelines confiáveis para coleta, limpeza e persistência de dados públicos em escala.",
+        "command": """Desenhe uma spider Scrapy para [DOMÍNIO E OBJETIVO].\nCampos: [CAMPOS]. Destino: [BANCO/ARQUIVO/API].\n\nForneça estrutura de itens, spider, paginação, pipelines de limpeza, validação, cache, retry, observabilidade, testes com fixtures e política de respeito a robots.txt e termos de uso."""
+    },
+    # --- PLANILHAS E EXCEL COM IA (apresentados como skills normais em Dados) ---
+    {
+        "title": "Análise de Planilhas com IA (PandasAI)",
+        "category": "Dados",
+        "kind": "Excel com IA",
+        "level": "Intermediário",
+        "github_stars": 21000,
+        "github_repo": "sinaptik-ai/pandas-ai",
+        "github_url": "https://github.com/sinaptik-ai/pandas-ai",
+        "author": "sinaptik-ai",
+        "source": "github",
+        "target_ais": ["universal", "chatgpt", "claude"],
+        "tags": ["excel", "planilha", "pandas", "analise", "ia"],
+        "description": "Transforma perguntas em linguagem natural em análises auditáveis de planilhas e DataFrames, com validação dos resultados.",
+        "command": """Analise a planilha [NOME/ARQUIVO] como um analista de dados.\nObjetivo: [PERGUNTA DE NEGÓCIO]. Colunas: [DESCREVA AS COLUNAS].\n\nEntregue: limpeza necessária, métricas calculadas, código reproduzível, visualizações adequadas, achados com evidências, limitações e recomendações. Nunca invente linhas, colunas ou valores ausentes; sinalize ambiguidades."""
+    },
+    {
+        "title": "Automação de Relatórios em Excel (Python)",
+        "category": "Dados",
+        "kind": "Automação de Planilhas",
+        "level": "Intermediário",
+        "github_stars": 36000,
+        "github_repo": "pandas-dev/pandas",
+        "github_url": "https://github.com/pandas-dev/pandas",
+        "author": "pandas-dev",
+        "source": "github",
+        "target_ais": ["universal", "chatgpt", "claude", "cursor"],
+        "tags": ["excel", "xlsx", "planilha", "relatorio", "automacao"],
+        "description": "Cria rotinas confiáveis para consolidar, validar e exportar relatórios Excel repetitivos com rastreabilidade.",
+        "command": """Projete uma rotina Python para automatizar o relatório Excel [NOME].\nArquivos de entrada: [ARQUIVOS]. Abas e colunas: [ESTRUTURA]. Saída esperada: [RELATÓRIO].\n\nInclua ingestão, normalização, validação de tipos e duplicatas, regras de negócio, fórmulas ou tabelas agregadas, formatação, logs, tratamento de erros e um teste com dados de exemplo."""
+    },
 ]
 
 
