@@ -663,10 +663,17 @@ async def list_skills(category: Optional[str] = None, search: Optional[str] = No
 async def sync_github_skills_to_db():
     try:
         from services.github_skills import get_all_top_github_skills, EXCLUDED_REPOS
-        # Limpa completamente o banco de skills para evitar duplicatas ou legados
-        await db.skills.delete_many({})
-        
+        # Primeiro monta e valida o catálogo; só substitui o banco depois de
+        # obter uma lista completa. Assim um timeout da API do GitHub não
+        # apaga o catálogo que já está funcionando.
         skills = await get_all_top_github_skills()
+        if not skills:
+            logger.warning("Catálogo do GitHub vazio; mantendo skills existentes no banco.")
+            return 0
+
+        # Substituição atômica em nível de aplicação: a exclusão ocorre apenas
+        # depois que o catálogo curado/dinâmico foi carregado com sucesso.
+        await db.skills.delete_many({})
         count = 0
         seen_repos = set(r.lower().strip() for r in EXCLUDED_REPOS if r)
         seen_titles = set()
@@ -1179,7 +1186,7 @@ async def startup():
         logger.error("Startup ignorado: MONGO_URL não configurada. As rotas que usam o banco vão retornar erro 503.")
         return
     try:
-        await asyncio.wait_for(_run_startup_tasks(), timeout=8)
+        await asyncio.wait_for(_run_startup_tasks(), timeout=45)
     except Exception as e:
         logger.error(f"Startup com banco falhou (app segue no ar, mas rotas de dados podem falhar): {e}")
     
