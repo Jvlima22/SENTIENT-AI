@@ -51,7 +51,7 @@ def detect_category(title: str, description: str, tags: List[str]) -> str:
     for cat, kws in CATEGORY_KEYWORDS.items():
         score = sum(1 for kw in kws if kw in text)
         scores[cat] = score
-    
+
     best = max(scores.items(), key=lambda x: x[1])
     return best[0] if best[1] > 0 else "Desenvolvimento"
 
@@ -69,10 +69,10 @@ def detect_target_ais(title: str, description: str, command: str, tags: List[str
         ais.append("gemini")
     if "perplexity" in text or "search" in text or "research" in text:
         ais.append("perplexity")
-    
+
     if not ais:
         return ["universal", "claude", "chatgpt", "gemini", "perplexity", "cursor"]
-    
+
     if "universal" not in ais:
         ais.insert(0, "universal")
     return ais
@@ -999,6 +999,281 @@ Defina nós, estado compartilhado, transições, condições de parada, validaç
         "description": "Cria rotinas confiáveis para consolidar, validar e exportar relatórios Excel repetitivos com rastreabilidade.",
         "command": """Projete uma rotina Python para automatizar o relatório Excel [NOME].\nArquivos de entrada: [ARQUIVOS]. Abas e colunas: [ESTRUTURA]. Saída esperada: [RELATÓRIO].\n\nInclua ingestão, normalização, validação de tipos e duplicatas, regras de negócio, fórmulas ou tabelas agregadas, formatação, logs, tratamento de erros e um teste com dados de exemplo."""
     },
+
+    # --- SKILLS ADICIONAIS CURADAS POR TEMA (skills normais) ---
+    {
+        "title": "Sistema de Design para Interfaces (UI UX Pro Max)",
+        "category": "Marketing",
+        "kind": "Design de Conteúdo",
+        "level": "Avançado",
+        "github_stars": 126327,
+        "github_repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+        "github_url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+        "author": "nextlevelbuilder",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "cursor"],
+        "tags": ["design", "ui-ux", "paleta", "tipografia", "design-system"],
+        "description": "Explora estilos, paletas, tipografia e diretrizes UX para criar interfaces e peças digitais consistentes.",
+        "command": "Atue como especialista em UI/UX e direção visual usando o repositório UI UX Pro Max.\nBriefing: [OBJETIVO, PÚBLICO, CANAL E REFERÊNCIAS].\n\nEntregue: direção visual, estilo, paleta, tipografia, tokens, hierarquia, estados responsivos, critérios de acessibilidade e um checklist para evitar decisões genéricas ou AI-slop."
+    },
+    {
+        "title": "Processo Completo de Design Visual (Designer Skills)",
+        "category": "Marketing",
+        "kind": "Design de Conteúdo",
+        "level": "Avançado",
+        "github_stars": 2593,
+        "github_repo": "Owl-Listener/designer-skills",
+        "github_url": "https://github.com/Owl-Listener/designer-skills",
+        "author": "Owl-Listener",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "cursor"],
+        "tags": ["design", "design-system", "interacao", "critica-visual", "componentes"],
+        "description": "Organiza UI design, design systems, interação e crítica visual em um processo reutilizável de criação e revisão.",
+        "command": "Estruture o processo de design para [PEÇA OU INTERFACE].\n\nEntregue: grid, composição, cor, tipografia, tokens, componentes, estados, motion, acessibilidade e uma crítica visual objetiva com problemas, impacto, correções e critérios de aprovação."
+    },
+    {
+        "title": "Copywriting e Copy-Editing para Conversão (Marketing Skills)",
+        "category": "Marketing",
+        "kind": "Copywriting",
+        "level": "Avançado",
+        "github_stars": 49167,
+        "github_repo": "coreyhaines31/marketingskills",
+        "github_url": "https://github.com/coreyhaines31/marketingskills",
+        "author": "coreyhaines31",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "gemini"],
+        "tags": ["texto", "copywriting", "copy-editing", "cta", "conversao"],
+        "description": "Cria e revisa copy com contexto de público, oferta, objeções, benefícios, clareza, especificidade e CTAs.",
+        "command": "Atue como copywriter e editor de conversão.\nContexto: [OFERTA, PÚBLICO, CANAL, OBJETIVO E PROVAS DISPONÍVEIS].\n\nEntregue: mensagem principal, benefícios verificáveis, estrutura por seção, headlines, CTA, objeções, alternativas de tom e revisão de clareza. Não invente métricas, depoimentos ou garantias."
+    },
+    {
+        "title": "Copy para LinkedIn, Hooks e Repurposing",
+        "category": "Marketing",
+        "kind": "Conteúdo Social",
+        "level": "Intermediário",
+        "github_stars": 1418,
+        "github_repo": "sergebulaev/linkedin-skills",
+        "github_url": "https://github.com/sergebulaev/linkedin-skills",
+        "author": "sergebulaev",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt"],
+        "tags": ["copy", "social", "hooks", "linkedin", "repurposing"],
+        "description": "Produz hooks, posts, comentários e adaptações de conteúdo com voz de marca e revisão humana.",
+        "command": "Transforme o conteúdo abaixo em uma publicação social.\nFonte: [TEXTO, VÍDEO OU IDEIA]. Voz: [ATRIBUTOS]. Objetivo: [OBJETIVO].\n\nEntregue 5 hooks, 2 versões de post, CTA natural, versão curta e uma adaptação para outro canal. Preserve fatos, não invente autoridade e sinalize pontos que exigem revisão."
+    },
+    {
+        "title": "Orquestração de QA e Automação de Testes",
+        "category": "Automação",
+        "kind": "Automação de Testes",
+        "level": "Avançado",
+        "github_stars": 233,
+        "github_repo": "fugazi/test-automation-skills-agents",
+        "github_url": "https://github.com/fugazi/test-automation-skills-agents",
+        "author": "fugazi",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "cursor"],
+        "tags": ["automacao", "qa", "e2e", "api-testing", "playwright"],
+        "description": "Planeja QA, testes de API, E2E, smoke, regressão, acessibilidade e investigação de flakiness.",
+        "command": "Modele uma estratégia de testes para [SISTEMA].\nRiscos: [RISCOS]. Fluxos críticos: [FLUXOS]. Stack: [STACK].\n\nEntregue matriz de cobertura, cenários, dados isolados, seletores robustos, evidências, retries limitados, critérios de aprovação e plano de diagnóstico. Não esconda falhas com retries."
+    },
+    {
+        "title": "Catálogo de Skills para QA Multicamadas",
+        "category": "Automação",
+        "kind": "Automação de Testes",
+        "level": "Avançado",
+        "github_stars": 116,
+        "github_repo": "petrkindlmann/qa-skills",
+        "github_url": "https://github.com/petrkindlmann/qa-skills",
+        "author": "petrkindlmann",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "cursor"],
+        "tags": ["qa", "playwright", "cypress", "mobile", "ci-cd"],
+        "description": "Seleciona playbooks de Playwright, Cypress, API, mobile, performance, acessibilidade, segurança e CI/CD.",
+        "command": "Escolha a estratégia de QA adequada para [PROJETO E RISCO].\n\nEntregue uma seleção mínima de skills, ordem de execução, ambiente, fixtures, contratos, evidências, quality gates e plano de manutenção. Priorize testes determinísticos e explique o que não será automatizado."
+    },
+    {
+        "title": "Automação Oficial de Navegadores com Playwright CLI",
+        "category": "Automação",
+        "kind": "Automação de Testes",
+        "level": "Avançado",
+        "github_stars": 13183,
+        "github_repo": "microsoft/playwright-cli",
+        "github_url": "https://github.com/microsoft/playwright-cli",
+        "author": "microsoft",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "cursor"],
+        "tags": ["playwright", "browser", "e2e", "debug", "testing"],
+        "description": "Estrutura automação, debugging, tracing, mocking e geração de testes Playwright para agentes de programação.",
+        "command": "Planeje um fluxo Playwright para [SITE E FLUXO].\n\nEntregue comandos e teste reproduzível, seletores resilientes, estado de sessão seguro, mocks quando apropriado, tracing, evidências, tratamento de falhas e limpeza. Nunca contorne CAPTCHA ou controles de acesso."
+    },
+    {
+        "title": "Skills de Navegação e Extração com BrowserAct",
+        "category": "Dados",
+        "kind": "Scraping em Tempo Real",
+        "level": "Avançado",
+        "github_stars": 5850,
+        "github_repo": "browser-act/skills",
+        "github_url": "https://github.com/browser-act/skills",
+        "author": "browser-act",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "perplexity"],
+        "tags": ["scraping", "browser", "extracao", "tempo-real", "skills"],
+        "description": "Orienta automação de navegador, extração estruturada, sessões isoladas e criação de skills por site.",
+        "command": "Projete uma coleta com navegador para [DOMÍNIOS E OBJETIVO].\n\nDefina URLs permitidas, campos, schema, sessão sem credenciais expostas, limites de taxa, evidências, deduplicação, timestamp, fallback e critérios de parada. Respeite robots.txt, termos e controles de acesso."
+    },
+    {
+        "title": "Crawlers Node.js com Filas e Retry (Crawlee)",
+        "category": "Dados",
+        "kind": "Scraping em Tempo Real",
+        "level": "Avançado",
+        "github_stars": 25706,
+        "github_repo": "apify/crawlee",
+        "github_url": "https://github.com/apify/crawlee",
+        "author": "apify",
+        "source": "github",
+        "target_ais": ["universal", "chatgpt", "claude", "cursor"],
+        "tags": ["scraping", "crawler", "nodejs", "playwright", "pipeline"],
+        "description": "Planeja crawlers com filas persistentes, deduplicação, retries, datasets e promoção controlada para navegador.",
+        "command": "Desenhe um crawler Crawlee para [FONTES].\nCampos: [SCHEMA]. Frequência: [FREQUÊNCIA].\n\nEntregue RequestQueue, estratégia HTTP antes de browser, paginação, deduplicação, backoff, limites de taxa, dataset, freshness, logs e testes. Não contorne autenticação, CAPTCHA ou termos do site."
+    },
+    {
+        "title": "Automação do Excel por MCP (ExcelMcp)",
+        "category": "Dados",
+        "kind": "Excel com IA",
+        "level": "Avançado",
+        "github_stars": 675,
+        "github_repo": "sbroenne/mcp-server-excel",
+        "github_url": "https://github.com/sbroenne/mcp-server-excel",
+        "author": "sbroenne",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "cursor"],
+        "tags": ["excel", "mcp", "planilha", "formula", "vba"],
+        "description": "Planeja operações controladas no Excel real, incluindo células, fórmulas, Power Query, DAX, VBA, gráficos e formatação.",
+        "command": "Modele uma operação segura no Excel para [ARQUIVO E OBJETIVO].\n\nEntregue cópia de trabalho, allowlist de abas e caminhos, plano de leitura, alterações, validações, diff esperado e rollback. Peça aprovação antes de excluir ou sobrescrever dados e preserve o arquivo original."
+    },
+    {
+        "title": "Servidor MCP para Workbooks e Tabelas Excel",
+        "category": "Dados",
+        "kind": "Excel com IA",
+        "level": "Intermediário",
+        "github_stars": 1022,
+        "github_repo": "negokaz/excel-mcp-server",
+        "github_url": "https://github.com/negokaz/excel-mcp-server",
+        "author": "negokaz",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "cursor"],
+        "tags": ["excel", "mcp", "xlsx", "tabelas", "formatacao"],
+        "description": "Estrutura leitura, escrita, criação de abas, tabelas e formatação de workbooks com escopo controlado.",
+        "command": "Analise ou altere o workbook [ARQUIVO].\nObjetivo: [OBJETIVO]. Abas permitidas: [ABAS].\n\nEntregue plano de operações, schema de entrada/saída, validação de tipos, verificação de fórmulas, preservação de macros quando aplicável e relatório das mudanças."
+    },
+    {
+        "title": "Transformação de Células com IA (=PROMPT)",
+        "category": "Dados",
+        "kind": "Excel com IA",
+        "level": "Intermediário",
+        "github_stars": 949,
+        "github_repo": "getcellm/cellm",
+        "github_url": "https://github.com/getcellm/cellm",
+        "author": "getcellm",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt"],
+        "tags": ["excel", "ia", "prompt", "classificacao", "limpeza"],
+        "description": "Projeta transformações repetíveis de células para classificação, extração, limpeza, tradução e sumarização.",
+        "command": "Crie uma transformação tabular segura para [INTERVALO].\nInstrução: [INSTRUÇÃO]. Exemplos válidos: [EXEMPLOS].\n\nDefina fórmula ou operação, critérios de consistência, tratamento de vazio, amostra de validação, limites de custo, revisão de resultados e rollback."
+    },
+
+    # --- TEXTO, DOCUMENTOS E ESCRITA (skills normais) ---
+    {
+        "title": "Documentação Técnica para Projetos (GitHub Copilot)",
+        "category": "Desenvolvimento",
+        "kind": "Documentação Técnica",
+        "level": "Intermediário",
+        "github_stars": 38800,
+        "github_repo": "github/awesome-copilot",
+        "github_url": "https://github.com/github/awesome-copilot/tree/main/skills/documentation-writer",
+        "author": "github",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "cursor"],
+        "tags": ["documentacao", "markdown", "api", "guias", "github"],
+        "description": "Cria documentação Markdown clara para módulos, funcionalidades, APIs, configurações e guias de uso.",
+        "command": "Atue como redator técnico para [PROJETO OU FUNCIONALIDADE].\nPúblico: [PÚBLICO]. Contexto disponível: [CÓDIGO, API OU REQUISITOS].\n\nEntregue documentação Markdown com visão geral, pré-requisitos, instalação, uso, exemplos, parâmetros, erros comuns, limitações e próximos passos. Não invente comportamentos: marque informações que precisam ser confirmadas."
+    },
+    {
+        "title": "Criação e Manutenção de Documentação Markdown (Documenso)",
+        "category": "Produtividade",
+        "kind": "Documentos",
+        "level": "Intermediário",
+        "github_stars": 14900,
+        "github_repo": "documenso/documenso",
+        "github_url": "https://github.com/documenso/documenso/tree/main/.agents/skills/create-documentation",
+        "author": "documenso",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "cursor"],
+        "tags": ["documentos", "markdown", "documentacao", "modulos", "software"],
+        "description": "Gera documentação estruturada em Markdown para módulos, recursos e configurações de software.",
+        "command": "Crie ou atualize a documentação de [MÓDULO OU RECURSO].\nFontes de verdade: [CÓDIGO, TESTES, CONFIGURAÇÃO E DECISÕES].\n\nProduza Markdown com propósito, escopo, arquitetura ou fluxo, configuração, exemplos de entrada e saída, troubleshooting e referências. Diferencie fatos verificados de lacunas e mantenha a documentação sincronizada com o comportamento real."
+    },
+    {
+        "title": "Escrita Científica, Relatórios e Citações Verificadas",
+        "category": "Educação",
+        "kind": "Escrita Científica",
+        "level": "Avançado",
+        "github_stars": 2320,
+        "github_repo": "K-Dense-AI/claude-scientific-writer",
+        "github_url": "https://github.com/K-Dense-AI/claude-scientific-writer",
+        "author": "K-Dense-AI",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "perplexity"],
+        "tags": ["relatorio", "pesquisa", "citacoes", "artigo", "latex"],
+        "description": "Estrutura artigos, relatórios, revisões de literatura, propostas e documentos acadêmicos com pesquisa e citações verificáveis.",
+        "command": "Produza um documento de pesquisa sobre [TEMA].\nFormato: [RELATÓRIO, ARTIGO, REVISÃO OU PROPOSTA]. Público: [PÚBLICO].\n\nEntregue pergunta e escopo, estrutura, síntese baseada em fontes, citações verificáveis, limitações, distinção entre evidência e inferência e bibliografia. Nunca fabrique referência, resultado ou DOI; registre o que não pôde ser verificado."
+    },
+    {
+        "title": "Workflow Editorial Multiformato com Revisão",
+        "category": "Marketing",
+        "kind": "Produção de Conteúdo",
+        "level": "Intermediário",
+        "github_stars": 51,
+        "github_repo": "sociilabs/claude-content-writer",
+        "github_url": "https://github.com/sociilabs/claude-content-writer",
+        "author": "sociilabs",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "gemini"],
+        "tags": ["conteudo", "blog", "newsletter", "instagram", "seo"],
+        "description": "Conduz criação de blog, posts, legendas, e-mails e páginas por etapas de briefing, plano, execução, verificação e entrega.",
+        "command": "Crie conteúdo sobre [TEMA] para [CANAL].\nPúblico: [PÚBLICO]. Voz da marca: [ATRIBUTOS]. Objetivo: [OBJETIVO].\n\nSiga as etapas: discutir contexto, planejar estrutura e palavras-chave, escrever, verificar clareza/SEO/voz anti-genérica e entregar versão pronta. Gere variações para blog, feed, newsletter ou e-mail sem alterar os fatos."
+    },
+    {
+        "title": "Conteúdo SEO e Edição Estratégica",
+        "category": "Marketing",
+        "kind": "Texto e SEO",
+        "level": "Avançado",
+        "github_stars": 0,
+        "github_repo": "Yaroslavle/seo-content-writer-claude-skill",
+        "github_url": "https://github.com/Yaroslavle/seo-content-writer-claude-skill",
+        "author": "Yaroslavle",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt"],
+        "tags": ["seo", "conteudo", "edicao", "palavras-chave", "briefing"],
+        "description": "Transforma briefings em conteúdo SEO com estrutura editorial, intenção de busca, títulos, metadados e revisão de qualidade.",
+        "command": "Planeje e escreva um conteúdo SEO sobre [TEMA].\nPalavra-chave principal: [PALAVRA]. Público: [PÚBLICO]. Objetivo: [OBJETIVO].\n\nEntregue intenção de busca, outline, título, meta description, subtítulos, conteúdo útil, links sugeridos, perguntas frequentes e checklist editorial. Evite keyword stuffing, promessas não comprovadas e texto genérico."
+    },
+
+    {
+        "title": "Aprimoramento de Textos e Adaptação de Tom (UX Writing)",
+        "category": "Marketing",
+        "kind": "Edição de Texto",
+        "level": "Intermediário",
+        "github_stars": 164,
+        "github_repo": "content-designer/ux-writing-skill",
+        "github_url": "https://github.com/content-designer/ux-writing-skill",
+        "author": "content-designer",
+        "source": "github",
+        "target_ais": ["universal", "claude", "chatgpt", "cursor"],
+        "tags": ["texto", "copy-editing", "tom", "clareza", "ux-writing"],
+        "description": "Reescreve e aprimora textos preservando a mensagem, com foco em clareza, concisão, tom de voz, acessibilidade e adaptação ao contexto.",
+        "command": "Aprimore o texto abaixo sem alterar a mensagem principal.\nTexto original: [COLE O TEXTO]. Contexto: [CANAL, PÚBLICO E OBJETIVO]. Tom desejado: [PROFISSIONAL, DIRETO, AMIGÁVEL OU OUTRO].\n\nFaça passagens separadas de clareza, concisão, voz e tom, benefício, especificidade e acessibilidade. Entregue: versão revisada, versão mais curta, versão mais persuasiva quando fizer sentido e uma tabela breve com as principais mudanças. Preserve fatos, não invente provas e explique qualquer ambiguidade."
+    },
 ]
 
 
@@ -1006,11 +1281,11 @@ async def fetch_github_topic_skills(topic: str = "ai-agents", min_stars: int = 5
     """Consulta repositórios públicos dinamicamente na API do GitHub garantindo unicidade."""
     url = f"https://api.github.com/search/repositories?q=topic:{topic}+stars:>={min_stars}&sort=stars&order=desc&per_page=15"
     skills = []
-    
+
     try:
         def _fetch():
             return requests.get(url, headers=get_github_headers(), timeout=15)
-            
+
         res = await asyncio.to_thread(_fetch)
         if res.status_code == 200:
             data = res.json()
@@ -1018,7 +1293,7 @@ async def fetch_github_topic_skills(topic: str = "ai-agents", min_stars: int = 5
                 repo = item.get("full_name", "")
                 if not repo or repo in EXCLUDED_REPOS or "prompts.chat" in repo or "awesome-chatgpt-prompts" in repo:
                     continue
-                
+
                 title = item.get("name", "").replace("-", " ").replace("_", " ").title()
                 desc = item.get("description") or f"Repositório oficial {repo} com alta pontuação no GitHub."
                 stars = item.get("stargazers_count", 0)
@@ -1027,7 +1302,7 @@ async def fetch_github_topic_skills(topic: str = "ai-agents", min_stars: int = 5
                 tags = item.get("topics", [])
                 category = detect_category(title, desc, tags)
                 target_ais = detect_target_ais(title, desc, "", tags)
-                
+
                 skills.append({
                     "title": title,
                     "category": category,
@@ -1047,7 +1322,7 @@ async def fetch_github_topic_skills(topic: str = "ai-agents", min_stars: int = 5
             logger.warning(f"GitHub API retornou status {res.status_code}: {res.text[:100]}")
     except Exception as e:
         logger.warning(f"Não foi possível consultar a API do GitHub: {e}")
-        
+
     return skills
 
 
@@ -1057,7 +1332,7 @@ async def get_all_top_github_skills() -> List[Dict[str, Any]]:
     seen_repos = set(r.lower().strip() for r in EXCLUDED_REPOS if r)
     seen_titles = set()
     seen_urls = set()
-    
+
     # 1. Adiciona catálogo curado garantindo unicidade absoluta por repositório, título e URL
     for skill in TOP_GITHUB_CURATED_SKILLS:
         repo = (skill.get("github_repo") or "").strip()
@@ -1065,17 +1340,17 @@ async def get_all_top_github_skills() -> List[Dict[str, Any]]:
         title = (skill.get("title") or "").strip()
         title_lower = title.lower()
         url = (skill.get("github_url") or "").strip().lower()
-        
+
         if not repo or repo_lower in seen_repos or (title_lower and title_lower in seen_titles) or (url and url in seen_urls):
             continue
-            
+
         all_skills.append(skill)
         seen_repos.add(repo_lower)
         if title_lower:
             seen_titles.add(title_lower)
         if url:
             seen_urls.add(url)
-    
+
     # 2. Tenta complementar dinamicamente apenas com repositórios adicionais não vistos
     try:
         dynamic_skills = await fetch_github_topic_skills("llm-tools", min_stars=500)
@@ -1085,10 +1360,10 @@ async def get_all_top_github_skills() -> List[Dict[str, Any]]:
             title = (ds.get("title") or "").strip()
             title_lower = title.lower()
             url = (ds.get("github_url") or "").strip().lower()
-            
+
             if not repo or repo_lower in seen_repos or (title_lower and title_lower in seen_titles) or (url and url in seen_urls):
                 continue
-                
+
             all_skills.append(ds)
             seen_repos.add(repo_lower)
             if title_lower:
@@ -1097,6 +1372,6 @@ async def get_all_top_github_skills() -> List[Dict[str, Any]]:
                 seen_urls.add(url)
     except Exception as e:
         logger.info(f"Usando catálogo curado de skills do GitHub: {e}")
-        
+
     all_skills.sort(key=lambda x: x.get("github_stars", 0), reverse=True)
     return all_skills

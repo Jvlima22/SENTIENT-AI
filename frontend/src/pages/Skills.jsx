@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { toPng } from "html-to-image";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "@/lib/api";
 import { useI18n } from "@/context/I18nContext";
@@ -125,137 +126,53 @@ function svgText(lines, x, y, lineHeight, className) {
     .join("");
 }
 
-async function downloadSkillCardPng(skill) {
-  const width = 1024;
-  const padding = 58;
-  const titleLines = wrapSvgText(skill.title, 42);
-  const descriptionLines = wrapSvgText(skill.description || "", 94);
-  const promptLines = wrapSvgText(skill.command || "", 94);
-  const visibleTags = (skill.tags || []).slice(0, 8);
-  const titleY = 132;
-  const descriptionY = titleY + titleLines.length * 48 + 28;
-  const promptY = descriptionY + descriptionLines.length * 28 + 58;
-  const promptHeight = Math.max(130, promptLines.length * 25 + 48);
-  const tagsY = promptY + promptHeight + 40;
-  const footerY = tagsY + 54;
-  const height = footerY + 88;
-  const tagMarkup = visibleTags
-    .map((tag, index) => {
-      const x = padding + index * 118;
-      return `<rect x="${x}" y="${tagsY}" width="108" height="30" rx="15" class="tag-bg"/><text x="${x + 54}" y="${tagsY + 20}" text-anchor="middle" class="tag-text">${escapeSvg(`#${tag}`)}</text>`;
-    })
-    .join("");
-  const stars = formatStars(skill.github_stars) || "—";
-  const repo = skill.github_repo || "SENTIENT-AI";
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-    <style>
-      .bg{fill:#101015}.card{fill:#0A0A0F;stroke:#34343e;stroke-width:2}.eyebrow{fill:#FF8065;font:600 18px 'Arial';letter-spacing:3px}.title{fill:#fff;font:700 36px 'Arial'}.muted{fill:#a5a3ad;font:400 20px 'Arial'}.prompt-box{fill:#050508;stroke:#292932;stroke-width:2}.prompt{fill:#c8c5cf;font:400 18px monospace}.tag-bg{fill:#17171e;stroke:#363640;stroke-width:1}.tag-text{fill:#a7a4b0;font:400 14px monospace}.repo{fill:#777580;font:400 16px monospace}.star-bg{fill:#332d08;stroke:#7a6814;stroke-width:1}.star{fill:#FFD700;font:600 17px monospace}.footer{fill:#6e6b76;font:400 15px Arial}
-    </style>
-    <rect width="100%" height="100%" class="bg"/>
-    <rect x="28" y="28" width="${width - 56}" height="${height - 56}" rx="28" class="card"/>
-    <text x="${padding}" y="82" class="eyebrow">${escapeSvg(skill.category || "SKILL")}</text>
-    <rect x="${width - 222}" y="54" width="146" height="38" rx="19" class="star-bg"/>
-    <text x="${width - 204}" y="79" class="star">★ ${escapeSvg(stars)}</text>
-    ${svgText(titleLines, padding, titleY, 48, "title")}
-    <text x="${width - padding}" y="82" text-anchor="end" class="repo">${escapeSvg(repo)}</text>
-    ${svgText(descriptionLines, padding, descriptionY, 28, "muted")}
-    <rect x="${padding}" y="${promptY - 32}" width="${width - padding * 2}" height="${promptHeight}" rx="18" class="prompt-box"/>
-    ${svgText(promptLines, padding + 24, promptY + 4, 25, "prompt")}
-    ${tagMarkup}
-    <line x1="${padding}" y1="${footerY - 14}" x2="${width - padding}" y2="${footerY - 14}" stroke="#292932"/>
-    <text x="${padding}" y="${footerY + 28}" class="footer">SENTIENT-AI  •  ${escapeSvg(skill.kind || "Prompt")}  •  ${escapeSvg(repo)}</text>
-    <text x="${width - padding}" y="${footerY + 28}" text-anchor="end" class="footer">PROMPT COMPLETO</text>
-  </svg>`;
-  const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  try {
-    const image = new Image();
-    await new Promise((resolve, reject) => {
-      image.onload = resolve;
-      image.onerror = reject;
-      image.src = url;
-    });
-    const canvas = document.createElement("canvas");
-    canvas.width = width * 2;
-    canvas.height = height * 2;
-    const context = canvas.getContext("2d");
-    context.scale(2, 2);
-    context.drawImage(image, 0, 0);
-    const pngUrl = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.href = pngUrl;
-    link.download = `${(skill.title || "skill").replace(/[^a-z0-9À-ÿ]+/gi, "-").replace(/^-|-$/g, "")}.png`;
-    link.click();
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+async function downloadSkillCardPng(skill, cardElement) {
+  if (!cardElement) throw new Error("Card da skill não encontrado");
+  const pngUrl = await toPng(cardElement, {
+    cacheBust: true,
+    pixelRatio: Math.max(2, window.devicePixelRatio || 1),
+    backgroundColor: "#0A0A0F",
+    style: { transform: "none" },
+  });
+  const link = document.createElement("a");
+  link.href = pngUrl;
+  link.download = `${(skill.title || "skill").replace(/[^a-z0-9À-ÿ]+/gi, "-").replace(/^-|-$/g, "")}.png`;
+  link.click();
 }
 
-async function downloadSkillDetailPng(skill) {
-  const width = 1400;
-  const padding = 76;
-  const titleLines = wrapSvgText(skill.title, 54);
-  const descriptionLines = wrapSvgText(skill.description || "", 112);
-  const promptLines = wrapSvgText(skill.command || "", 112);
-  const headerY = 146;
-  const descriptionY = headerY + titleLines.length * 54 + 38;
-  const tabsY = descriptionY + descriptionLines.length * 30 + 70;
-  const promptY = tabsY + 94;
-  const promptHeight = Math.max(220, promptLines.length * 29 + 58);
-  const commentsY = promptY + promptHeight + 86;
-  const footerY = commentsY + 142;
-  const height = footerY + 112;
-  const stars = formatStars(skill.github_stars) || "—";
-  const repo = skill.github_repo || "SENTIENT-AI";
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-    <style>
-      .bg{fill:#101015}.panel{fill:#101015;stroke:#34343e;stroke-width:2}.eyebrow{fill:#FF8065;font:600 17px Arial;letter-spacing:3px}.title{fill:#fff;font:700 42px Arial}.muted{fill:#a7a4ae;font:400 21px Arial}.tab{fill:#eeeef2;font:600 18px Arial}.tab-muted{fill:#777580;font:600 18px Arial}.prompt-box{fill:#050508;stroke:#292932;stroke-width:2}.prompt{fill:#d0cdd6;font:400 20px monospace}.repo{fill:#777580;font:400 17px monospace}.star-bg{fill:#332d08;stroke:#7a6814;stroke-width:1}.star{fill:#FFD700;font:600 17px monospace}.label{fill:#fff;font:700 20px Arial}.comment{fill:#777580;font:400 17px Arial}.footer{fill:#bcb9c2;font:500 17px Arial}.footer-accent{fill:#000;font:600 18px Arial}
-    </style>
-    <rect width="100%" height="100%" class="bg"/>
-    <rect x="34" y="34" width="${width - 68}" height="${height - 68}" rx="24" class="panel"/>
-    <text x="${padding}" y="86" class="eyebrow">${escapeSvg(skill.category || "SKILL")} · ${escapeSvg(skill.kind || "PROMPT")}</text>
-    <rect x="${width - 320}" y="58" width="182" height="38" rx="19" class="star-bg"/>
-    <text x="${width - 300}" y="83" class="star">★ ${escapeSvg(stars)} estrelas</text>
-    <text x="${width - padding}" y="84" text-anchor="end" class="repo">${escapeSvg(repo)}</text>
-    ${svgText(titleLines, padding, headerY, 54, "title")}
-    ${svgText(descriptionLines, padding, descriptionY, 30, "muted")}
-    <line x1="${padding}" y1="${tabsY - 28}" x2="${width - padding}" y2="${tabsY - 28}" stroke="#292932"/>
-    <text x="${padding}" y="${tabsY + 22}" class="tab">›  Prompt &amp; Conteúdo</text>
-    <text x="${padding + 280}" y="${tabsY + 22}" class="tab-muted">▦  Conectar via MCP</text>
-    <text x="${padding + 590}" y="${tabsY + 22}" class="tab-muted">◷  Metadados &amp; Fonte</text>
-    <line x1="${padding}" y1="${tabsY + 42}" x2="${padding + 230}" y2="${tabsY + 42}" stroke="#FF8065" stroke-width="3"/>
-    <rect x="${width - padding - 176}" y="${tabsY + 58}" width="176" height="42" rx="21" fill="#fff"/>
-    <text x="${width - padding - 88}" y="${tabsY + 85}" text-anchor="middle" class="footer-accent">▶  Executar na IA</text>
-    <rect x="${padding}" y="${promptY - 36}" width="${width - padding * 2}" height="${promptHeight}" rx="20" class="prompt-box"/>
-    ${svgText(promptLines, padding + 28, promptY + 8, 29, "prompt")}
-    <line x1="${padding}" y1="${commentsY - 30}" x2="${width - padding}" y2="${commentsY - 30}" stroke="#292932"/>
-    <text x="${padding}" y="${commentsY + 8}" class="label">◌  Comentários da Comunidade (0)</text>
-    <rect x="${padding}" y="${commentsY + 34}" width="${width - padding * 2}" height="64" rx="14" fill="#15151b" stroke="#494751" stroke-dasharray="7 7"/>
-    <text x="${padding + 24}" y="${commentsY + 73}" class="comment">Entre na sua conta para participar da conversa e avaliar esta skill.</text>
-    <line x1="34" y1="${footerY - 30}" x2="${width - 34}" y2="${footerY - 30}" stroke="#292932"/>
-    <text x="${width - padding}" y="${footerY + 38}" text-anchor="end" class="footer">SENTIENT-AI  •  PROMPT COMPLETO</text>
-  </svg>`;
-  const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
+async function downloadSkillDetailPng(skill, detailElement) {
+  if (!detailElement) throw new Error("Detalhe da skill não encontrado");
+  const contentElement = detailElement.querySelector(".skill-dialog-content");
+  const original = {
+    sectionHeight: detailElement.style.height,
+    sectionMaxHeight: detailElement.style.maxHeight,
+    contentOverflow: contentElement?.style.overflow,
+    contentFlex: contentElement?.style.flex,
+  };
+  if (contentElement) {
+    contentElement.style.overflow = "visible";
+    contentElement.style.flex = "none";
+  }
+  detailElement.style.height = "auto";
+  detailElement.style.maxHeight = "none";
   try {
-    const image = new Image();
-    await new Promise((resolve, reject) => {
-      image.onload = resolve;
-      image.onerror = reject;
-      image.src = url;
+    const pngUrl = await toPng(detailElement, {
+      cacheBust: true,
+      pixelRatio: Math.max(2, window.devicePixelRatio || 1),
+      backgroundColor: "#101015",
+      style: { transform: "none" },
     });
-    const canvas = document.createElement("canvas");
-    canvas.width = width * 2;
-    canvas.height = height * 2;
-    const context = canvas.getContext("2d");
-    context.scale(2, 2);
-    context.drawImage(image, 0, 0);
     const link = document.createElement("a");
-    link.href = canvas.toDataURL("image/png");
+    link.href = pngUrl;
     link.download = `${(skill.title || "skill").replace(/[^a-z0-9À-ÿ]+/gi, "-").replace(/^-|-$/g, "")}-detalhe.png`;
     link.click();
   } finally {
-    URL.revokeObjectURL(url);
+    detailElement.style.height = original.sectionHeight;
+    detailElement.style.maxHeight = original.sectionMaxHeight;
+    if (contentElement) {
+      contentElement.style.overflow = original.contentOverflow;
+      contentElement.style.flex = original.contentFlex;
+    }
   }
 }
 
@@ -294,6 +211,7 @@ export default function Skills() {
   const [copied, setCopied] = useState(null);
   const [openSkill, setOpenSkill] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const toolbarRef = useRef(null);
 
   const toggleDropdown = (name) => {
@@ -480,24 +398,39 @@ export default function Skills() {
         {/* 1. Barra de Busca e Ordenação (Mais Populares / Stars, etc) */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Campo de Busca */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 skills-search-row">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               data-testid="skills-search"
               placeholder="Busque por tema, objetivo, repositório ou tag..."
-              className="w-full bg-[#0A0A0F] border border-white/10 rounded-2xl pl-11 pr-10 py-3 text-sm outline-none focus:border-[#FF7A59]/60 text-white placeholder:text-white/35 transition-colors"
+              className="w-full bg-[#0A0A0F] border border-white/10 rounded-2xl pl-11 pr-14 py-3 text-sm outline-none focus:border-[#FF7A59]/60 text-white placeholder:text-white/35 transition-colors"
             />
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/45 hover:text-white"
+                className="absolute right-12 top-1/2 -translate-y-1/2 p-1 text-white/45 hover:text-white"
                 title="Limpar busca"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => setMobileFiltersOpen(true)}
+              className={`mobile-filters-trigger absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
+                activeFilters > 0
+                  ? "border-[#FF7A59]/60 bg-[#FF7A59]/15 text-[#ffab96]"
+                  : "border-white/10 bg-white/[0.04] text-white/65 hover:border-white/30 hover:text-white"
+              }`}
+              aria-label="Abrir filtros"
+              aria-expanded={mobileFiltersOpen}
+              title="Abrir filtros"
+            >
+              <Filter className="h-4 w-4" />
+              {activeFilters > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FF7A59] px-1 text-[9px] font-bold text-black">{activeFilters}</span>}
+            </button>
           </div>
 
           {/* Seletor de Ordenação */}
@@ -518,7 +451,7 @@ export default function Skills() {
         </div>
 
         {/* 2. Filtros Lado a Lado (Grid 4 colunas abaixo da busca - Popovers Flutuantes que Sobrepõem) */}
-        <div ref={toolbarRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start relative z-30">
+        <div ref={toolbarRef} className="skills-desktop-filters grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start relative z-30">
           {/* 1. Filtro por IA */}
           <div className="relative">
             <button
@@ -900,6 +833,28 @@ export default function Skills() {
           )}
         </div>
 
+        {mobileFiltersOpen && (
+          <MobileFiltersSheet
+            targetAi={targetAi}
+            setTargetAi={setTargetAi}
+            category={category}
+            setCategory={setCategory}
+            kind={kind}
+            setKind={setKind}
+            level={level}
+            setLevel={setLevel}
+            source={source}
+            setSource={setSource}
+            sort={sort}
+            setSort={setSort}
+            categories={categories}
+            kinds={kinds}
+            levels={levels}
+            clearFilters={clearFilters}
+            onClose={() => setMobileFiltersOpen(false)}
+          />
+        )}
+
         {/* 3. Tags de Filtros Ativos */}
         {(category !== ALL || targetAi !== ALL || kind !== ALL || level !== ALL || source !== ALL || search) && (
           <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -1039,11 +994,14 @@ function FilterSelect({ label, value, onChange, options, allLabel }) {
           className="w-full appearance-none rounded-xl border border-white/15 bg-[#17171e] px-3 py-2.5 text-sm text-white outline-none focus:border-[#FF7A59]/60 cursor-pointer"
         >
           <option value={ALL}>{allLabel}</option>
-          {options.map((item) => (
-            <option key={item} value={item}>
-              {item}
+          {options.map((item) => {
+            const option = typeof item === "string" ? { value: item, label: item } : item;
+            return (
+            <option key={option.value} value={option.value}>
+              {option.label}
             </option>
-          ))}
+            );
+          })}
         </select>
         <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-white/45 pointer-events-none" />
       </div>
@@ -1051,7 +1009,68 @@ function FilterSelect({ label, value, onChange, options, allLabel }) {
   );
 }
 
+function MobileFiltersSheet({
+  targetAi,
+  setTargetAi,
+  category,
+  setCategory,
+  kind,
+  setKind,
+  level,
+  setLevel,
+  source,
+  setSource,
+  sort,
+  setSort,
+  categories,
+  kinds,
+  levels,
+  clearFilters,
+  onClose,
+}) {
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className="mobile-filters-sheet fixed inset-0 z-[65] sm:hidden" role="dialog" aria-modal="true" aria-label="Filtros de skills">
+      <button type="button" className="absolute inset-0 h-full w-full bg-black/70 backdrop-blur-sm" onClick={onClose} aria-label="Fechar filtros" />
+      <section className="absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto rounded-t-3xl border border-white/15 bg-[#101015] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 shadow-2xl">
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20" />
+        <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div>
+            <p className="font-mono-code text-[10px] uppercase tracking-[0.14em] text-[#FF7A59]">Catálogo</p>
+            <h2 className="mt-1 font-display text-base font-semibold text-white">Filtrar skills</h2>
+          </div>
+          <button type="button" onClick={onClose} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/60 hover:text-white" aria-label="Fechar filtros">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-4">
+          <FilterSelect label="Compatibilidade com IA" value={targetAi} onChange={setTargetAi} options={AI_OPTIONS.filter((item) => item.id !== ALL).map((item) => ({ value: item.id, label: item.label }))} allLabel="Todas as IAs" />
+          <FilterSelect label="Categoria" value={category} onChange={setCategory} options={categories} allLabel="Todas as categorias" />
+          <FilterSelect label="Tipo de skill" value={kind} onChange={setKind} options={kinds} allLabel="Todos os tipos" />
+          <FilterSelect label="Nível de dificuldade" value={level} onChange={setLevel} options={levels} allLabel="Todos os níveis" />
+          <FilterSelect label="Origem dos dados" value={source} onChange={setSource} options={["github", "editorial"]} allLabel="Todas as origens" />
+          <FilterSelect label="Ordenar por" value={sort} onChange={setSort} options={[{ value: "stars", label: "Mais pontuadas (GitHub Stars)" }, { value: "recent", label: "Mais recentes" }, { value: "title", label: "Título (A-Z)" }]} allLabel="Mais pontuadas" />
+        </div>
+
+        <div className="mt-6 flex gap-2 border-t border-white/10 pt-4">
+          <button type="button" onClick={clearFilters} className="min-h-11 flex-1 rounded-xl border border-white/15 px-4 text-xs font-medium text-white/70 hover:border-white/30 hover:text-white">Limpar filtros</button>
+          <button type="button" onClick={onClose} className="min-h-11 flex-[1.4] rounded-xl bg-[#FF7A59] px-4 text-xs font-semibold text-black hover:bg-[#ff8f73]">Mostrar resultados</button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function SkillCard({ skill, index, copied, onCopy, onOpen, onDownloadPng }) {
+  const cardRef = useRef(null);
   const preview =
     skill.command.length > 190 ? `${skill.command.slice(0, 190)}…` : skill.command;
 
@@ -1061,8 +1080,9 @@ function SkillCard({ skill, index, copied, onCopy, onOpen, onDownloadPng }) {
 
   return (
     <article
+      ref={cardRef}
       onClick={() => onOpen(skill)}
-      className="grid-fade-in cursor-pointer flex flex-col justify-between rounded-2xl bg-[#0A0A0F] border border-white/10 p-5 hover:border-[#FF7A59]/45 hover:-translate-y-0.5 transition-all relative overflow-hidden group"
+      className="skill-card grid-fade-in cursor-pointer flex flex-col justify-between rounded-2xl bg-[#0A0A0F] border border-white/10 p-5 hover:border-[#FF7A59]/45 hover:-translate-y-0.5 transition-all relative overflow-hidden group"
       style={{ animationDelay: `${Math.min(index * 30, 300)}ms` }}
     >
       <div>
@@ -1089,7 +1109,7 @@ function SkillCard({ skill, index, copied, onCopy, onOpen, onDownloadPng }) {
               </span>
             )}
             {skill.github_repo && (
-              <span className="text-[10px] text-white/40 font-mono-code max-w-[130px] truncate">
+              <span className="text-[10px] text-white/40 font-mono-code max-w-[130px] truncate skill-card-repo">
                 {skill.github_repo}
               </span>
             )}
@@ -1097,12 +1117,12 @@ function SkillCard({ skill, index, copied, onCopy, onOpen, onDownloadPng }) {
         </div>
 
         {/* Descrição */}
-        <p className="text-sm text-white/55 mt-3 min-h-11 line-clamp-2 leading-relaxed">
+        <p className="text-sm text-white/55 mt-3 min-h-11 line-clamp-2 leading-relaxed skill-card-description">
           {skill.description}
         </p>
 
         {/* Preview do Prompt / Comando */}
-        <div className="mt-4 rounded-xl bg-black/40 border border-white/5 p-3 font-mono-code text-[11px] text-white/60 line-clamp-3 whitespace-pre-wrap">
+        <div className="mt-4 rounded-xl bg-black/40 border border-white/5 p-3 font-mono-code text-[11px] text-white/60 line-clamp-3 whitespace-pre-wrap skill-card-preview">
           {preview}
         </div>
 
@@ -1141,7 +1161,7 @@ function SkillCard({ skill, index, copied, onCopy, onOpen, onDownloadPng }) {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onDownloadPng(skill).catch(() => toast.error("Não foi possível gerar o PNG."));
+              onDownloadPng(skill, cardRef.current).catch(() => toast.error("Não foi possível gerar o PNG."));
             }}
             className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/[0.06] hover:bg-[#FF7A59]/15 border border-white/15 hover:border-[#FF7A59]/50 text-white/70 hover:text-white transition-all shadow-sm"
             title="Baixar modelo menor em PNG"
@@ -1165,7 +1185,7 @@ function SkillCard({ skill, index, copied, onCopy, onOpen, onDownloadPng }) {
               e.stopPropagation();
               onOpen(skill);
             }}
-            className="text-xs text-white/60 hover:text-white px-2 py-1"
+              className="text-xs text-white/60 hover:text-white px-2 py-2 skill-card-open"
           >
             Ver completo
           </button>
@@ -1176,6 +1196,7 @@ function SkillCard({ skill, index, copied, onCopy, onOpen, onDownloadPng }) {
 }
 
 function SkillDialog({ skill, copied, onCopy, onClose }) {
+  const detailRef = useRef(null);
   const { user } = useAuth();
   const { lang } = useI18n();
   const [tab, setTab] = useState("content");
@@ -1318,13 +1339,14 @@ function SkillDialog({ skill, copied, onCopy, onClose }) {
         onMouseDown={onClose}
       >
         <section
+          ref={detailRef}
           onMouseDown={(e) => e.stopPropagation()}
           className="flex h-[100dvh] w-full max-w-none flex-col overflow-hidden bg-[#101015] sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-4xl sm:rounded-2xl sm:border sm:border-white/15 sm:shadow-2xl"
         >
           {/* Cabeçalho do Modal */}
-          <header className="z-10 flex shrink-0 justify-between gap-3 border-b border-white/10 bg-[#101015]/95 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur sm:p-5 md:p-6">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
+          <header className="skill-dialog-header z-10 flex shrink-0 justify-between gap-3 border-b border-white/10 bg-[#101015]/95 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur sm:p-5 md:p-6">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[10px] uppercase tracking-[0.13em] text-[#FF7A59] font-mono-code">
                   {skill.category} · {skill.kind || "Prompt"}
                 </span>
@@ -1335,7 +1357,7 @@ function SkillDialog({ skill, copied, onCopy, onClose }) {
                   </span>
                 )}
               </div>
-              <h2 className="font-display font-semibold text-lg sm:text-xl md:text-2xl mt-2 text-white">
+              <h2 className="font-display font-semibold text-lg sm:text-xl md:text-2xl mt-2 text-white skill-dialog-title">
                 {skill.title}
               </h2>
             </div>
@@ -1349,10 +1371,10 @@ function SkillDialog({ skill, copied, onCopy, onClose }) {
           </header>
 
           {/* Conteúdo Principal do Modal */}
-          <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5 md:p-6">
+          <div className="skill-dialog-content min-h-0 flex-1 overflow-y-auto p-4 sm:p-5 md:p-6">
             {/* Linha de Descrição e Ações de Topo */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <p className="text-white/65 max-w-2xl text-sm leading-relaxed">
+              <p className="text-white/65 max-w-2xl text-sm leading-relaxed skill-dialog-description">
                 {skill.description}
               </p>
 
@@ -1384,7 +1406,7 @@ function SkillDialog({ skill, copied, onCopy, onClose }) {
             </div>
 
             {/* Abas */}
-            <div className="flex gap-4 overflow-x-auto no-scrollbar border-b border-white/10 mb-6">
+            <div className="skill-dialog-tabs flex gap-4 overflow-x-auto no-scrollbar border-b border-white/10 mb-6">
               <Tab active={tab === "content"} onClick={() => setTab("content")}>
                 <Terminal className="w-4 h-4" />
                 Prompt & Conteúdo
@@ -1420,7 +1442,7 @@ function SkillDialog({ skill, copied, onCopy, onClose }) {
                     />
                   )}
                 </div>
-                <pre className="rounded-xl border border-white/10 bg-black/45 p-4 md:p-5 text-sm text-white/85 font-mono-code whitespace-pre-wrap leading-relaxed overflow-x-auto select-all">
+                <pre className="skill-dialog-prompt rounded-xl border border-white/10 bg-black/45 p-4 md:p-5 text-sm text-white/85 font-mono-code whitespace-pre-wrap leading-relaxed overflow-x-auto select-all">
                   {prompt}
                 </pre>
               </>
@@ -1529,18 +1551,18 @@ function SkillDialog({ skill, copied, onCopy, onClose }) {
           </div>
 
           {/* Rodapé do Modal */}
-          <footer className="flex shrink-0 justify-end gap-3 border-t border-white/10 bg-[#101015]/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:p-5">
+          <footer className="skill-dialog-footer flex shrink-0 justify-end gap-3 border-t border-white/10 bg-[#101015]/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:p-5">
             <button
               onClick={() =>
-                downloadSkillDetailPng(skill).catch(() =>
+                downloadSkillDetailPng(skill, detailRef.current).catch(() =>
                   toast.error("Não foi possível gerar o PNG.")
                 )
               }
               title="Baixar modelo maior em PNG"
-              className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-full border border-white/15 text-white/75 px-5 py-2.5 text-sm hover:border-[#FF7A59]/60 hover:text-white transition-colors"
+              aria-label="Baixar modelo maior em PNG"
+              className="skill-png-button inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-full border border-white/15 text-white/75 px-5 py-2.5 text-sm hover:border-[#FF7A59]/60 hover:text-white transition-colors"
             >
               <Download className="w-4 h-4" />
-              Baixar modelo maior (PNG)
             </button>
             <button
               onClick={copyPrompt}

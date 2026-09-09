@@ -212,3 +212,47 @@ body::before {
 @media (max-width: 380px) {
   .font-display { letter-spacing: -.05em; }
 }
+
+/* Skills: escala fluida e experiência de leitura mobile-first. Usa a largura
+   real do viewport, sem depender de um modelo específico de telefone. */
+.skill-card-description { font-size: clamp(0.8rem, 1.8vw, 0.875rem); }
+.skill-card-preview { font-size: clamp(0.64rem, 1.55vw, 0.6875rem); }
+.skill-dialog-title { font-size: clamp(1rem, 2.8vw, 1.5rem); line-height: 1.25; overflow-wrap: anywhere; }
+.skill-dialog-description { font-size: clamp(0.82rem, 1.8vw, 0.9375rem); }
+.skill-dialog-prompt { font-size: clamp(0.7rem, 1.65vw, 0.875rem); line-height: 1.65; }
+
+@media (max-width: 640px) {
+  .skills-desktop-filters { display: none; }
+  .mobile-filters-trigger { display: inline-flex; }
+  .skills-search-row input { min-height: 3rem; }
+  .mobile-filters-sheet select { min-height: 3rem; font-size: 0.875rem !important; }
+  .skill-card { padding: clamp(0.875rem, 4vw, 1.25rem); border-radius: 1rem; }
+  .skill-card-repo { max-width: min(42vw, 130px); }
+  .skill-card-open { min-height: 2.25rem; display: inline-flex; align-items: center; }
+
+  .skill-dialog-header { padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(0.75rem, env(safe-area-inset-right)); }
+  .skill-dialog-content { padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
+  .skill-dialog-tabs { gap: 1rem; margin-left: -0.25rem; margin-right: -0.25rem; padding-left: 0.25rem; padding-right: 0.25rem; }
+  .skill-dialog-tabs button { min-height: 2.75rem; font-size: clamp(0.72rem, 2.7vw, 0.875rem); }
+  .skill-dialog-prompt { max-height: min(52dvh, 32rem); overflow: auto; -webkit-overflow-scrolling: touch; }
+  .skill-dialog-footer { flex-direction: row; align-items: center; gap: 0.625rem; padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
+  .skill-dialog-footer .skill-png-button { width: 2.75rem; height: 2.75rem; flex: 0 0 2.75rem; padding: 0; border-radius: 9999px; }
+  .skill-dialog-footer > button:last-child { min-width: 0; flex: 1; }
+}
+
+@media (min-width: 641px) {
+  .mobile-filters-trigger { display: none; }
+}
+
+@media (max-width: 380px) {
+  .skill-card { padding: 0.875rem; }
+  .skill-card-open { font-size: 0.68rem; padding-left: 0.25rem; padding-right: 0.25rem; }
+  .skill-dialog-header { gap: 0.5rem; }
+  .skill-dialog-header .text-\[10px\] { font-size: 0.58rem; }
+  .skill-dialog-content { padding-top: 0.875rem; padding-bottom: 0.875rem; }
+  .skill-dialog-footer { padding-top: 0.75rem; padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skill-card, .skill-card * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
