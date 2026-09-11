@@ -32,6 +32,25 @@ import {
 } from "lucide-react";
 
 const ALL = "all";
+const SKILLS_CACHE_KEY = "sentient-ai:skills-cache:v1";
+const SKILLS_QUERY_CACHE_KEY = "sentient-ai:skills-query-cache:v1";
+
+function readSkillsCache(key) {
+  try {
+    const value = JSON.parse(window.localStorage.getItem(key) || "null");
+    return Array.isArray(value?.data) ? value.data : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeSkillsCache(key, data) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), data }));
+  } catch {
+    // A private browsing session may block localStorage; the network path still works.
+  }
+}
 
 const AI_OPTIONS = [
   { id: ALL, label: "Todas as IAs", icon: "✨" },
@@ -197,8 +216,11 @@ export default function Skills() {
   const { skillId } = useParams();
   const navigate = useNavigate();
 
-  const [skills, setSkills] = useState([]);
-  const [catalog, setCatalog] = useState([]);
+  const [skills, setSkills] = useState(() => readSkillsCache(SKILLS_QUERY_CACHE_KEY));
+  const [catalog, setCatalog] = useState(() => {
+    const catalogCache = readSkillsCache(SKILLS_CACHE_KEY);
+    return catalogCache.length ? catalogCache : readSkillsCache(SKILLS_QUERY_CACHE_KEY);
+  });
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState(ALL);
   const [kind, setKind] = useState(ALL);
@@ -207,7 +229,7 @@ export default function Skills() {
   const [source, setSource] = useState(ALL);
   const [sort, setSort] = useState("stars");
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => readSkillsCache(SKILLS_QUERY_CACHE_KEY).length === 0);
   const [copied, setCopied] = useState(null);
   const [openSkill, setOpenSkill] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -232,8 +254,14 @@ export default function Skills() {
   const fetchCatalog = () => {
     api
       .get("/skills")
-      .then((r) => setCatalog(dedupeSkills(r.data)))
-      .catch(() => setCatalog([]));
+      .then((r) => {
+        const nextCatalog = dedupeSkills(r.data);
+        setCatalog(nextCatalog);
+        writeSkillsCache(SKILLS_CACHE_KEY, nextCatalog);
+      })
+      .catch(() => {
+        // Keep the cached catalog visible when the API is temporarily slow/offline.
+      });
   };
 
   useEffect(() => {
@@ -254,7 +282,6 @@ export default function Skills() {
 
   // Busca filtrada e ordenada
   useEffect(() => {
-    setLoading(true);
     const params = {};
     if (category !== ALL) params.category = category;
     if (kind !== ALL) params.kind = kind;
@@ -264,13 +291,28 @@ export default function Skills() {
     if (sort) params.sort = sort;
     if (search.trim()) params.search = search.trim();
 
+    const queryKey = `${SKILLS_QUERY_CACHE_KEY}:${JSON.stringify(params)}`;
+    const cachedSkills = readSkillsCache(queryKey);
+    if (cachedSkills.length) {
+      setSkills(cachedSkills);
+      setLoading(false);
+    } else if (!skills.length) {
+      setLoading(true);
+    }
+
     const id = setTimeout(() => {
       api
         .get("/skills", { params })
-        .then((r) => setSkills(dedupeSkills(r.data)))
+        .then((r) => {
+          const nextSkills = dedupeSkills(r.data);
+          setSkills(nextSkills);
+          writeSkillsCache(queryKey, nextSkills);
+          if (!search && category === ALL && kind === ALL && level === ALL && targetAi === ALL && source === ALL) {
+            writeSkillsCache(SKILLS_QUERY_CACHE_KEY, nextSkills);
+          }
+        })
         .catch(() => {
-          setSkills([]);
-          toast.error("Não foi possível carregar as skills.");
+          if (!cachedSkills.length && !skills.length) toast.error("Não foi possível atualizar as skills.");
         })
         .finally(() => setLoading(false));
     }, 200);
