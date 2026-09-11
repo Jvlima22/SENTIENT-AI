@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "@/lib/api";
@@ -191,14 +191,72 @@ function dedupeSkills(list) {
   });
 }
 
+const SKILLS_CACHE_KEY = "sentient-ai.skills.catalog.v1";
+const SKILLS_CACHE_TTL = 1000 * 60 * 60 * 6;
+
+function readSkillsCache() {
+  try {
+    const raw = window.localStorage.getItem(SKILLS_CACHE_KEY);
+    if (!raw) return [];
+    const cached = JSON.parse(raw);
+    if (!cached || Date.now() - cached.savedAt > SKILLS_CACHE_TTL) return [];
+    return dedupeSkills(cached.items);
+  } catch {
+    return [];
+  }
+}
+
+function writeSkillsCache(items) {
+  try {
+    window.localStorage.setItem(
+      SKILLS_CACHE_KEY,
+      JSON.stringify({ savedAt: Date.now(), items })
+    );
+  } catch {
+    // O catálogo continua funcionando mesmo se o storage estiver indisponível.
+  }
+}
+
+function filterAndSortSkills(list, { search, category, kind, level, targetAi, source, sort }) {
+  const normalizedSearch = search.trim().toLowerCase();
+  const normalizedTarget = targetAi.toLowerCase();
+  const filtered = list.filter((skill) => {
+    const haystack = [
+      skill.title,
+      skill.description,
+      skill.github_repo,
+      ...(skill.tags || []),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    const targetAis = (skill.target_ais || []).map((item) => String(item).toLowerCase());
+    return (
+      (!normalizedSearch || haystack.includes(normalizedSearch)) &&
+      (category === ALL || skill.category === category) &&
+      (kind === ALL || (skill.kind || "Prompt") === kind) &&
+      (level === ALL || (skill.level || "Iniciante") === level) &&
+      (source === ALL || (skill.source || "editorial") === source) &&
+      (targetAi === ALL || targetAis.includes(normalizedTarget) || targetAis.includes("universal") || (skill.tags || []).some((tag) => String(tag).toLowerCase() === normalizedTarget))
+    );
+  });
+
+  return [...filtered].sort((a, b) => {
+    if (sort === "recent") return String(b.created_at || "").localeCompare(String(a.created_at || ""));
+    if (sort === "title") return String(a.title || "").localeCompare(String(b.title || ""));
+    return (b.github_stars || 0) - (a.github_stars || 0);
+  });
+}
+
 export default function Skills() {
   const { t } = useI18n();
   const { user } = useAuth();
   const { skillId } = useParams();
   const navigate = useNavigate();
 
-  const [skills, setSkills] = useState([]);
-  const [catalog, setCatalog] = useState([]);
+  const initialSkills = useMemo(() => readSkillsCache(), []);
+  const [skills, setSkills] = useState(initialSkills);
+  const [catalog, setCatalog] = useState(initialSkills);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState(ALL);
   const [kind, setKind] = useState(ALL);
@@ -207,7 +265,7 @@ export default function Skills() {
   const [source, setSource] = useState(ALL);
   const [sort, setSort] = useState("stars");
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(initialSkills.length === 0);
   const [copied, setCopied] = useState(null);
   const [openSkill, setOpenSkill] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -228,17 +286,31 @@ export default function Skills() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Carrega catálogo base
-  const fetchCatalog = () => {
-    api
-      .get("/skills")
-      .then((r) => setCatalog(dedupeSkills(r.data)))
-      .catch(() => setCatalog([]));
-  };
+  // Mostra o catálogo persistido imediatamente e atualiza em background.
+  const fetchCatalog = useCallback(async () => {
+    const cached = readSkillsCache();
+    if (cached.length) {
+      setCatalog(cached);
+      setSkills(cached);
+      setLoading(false);
+    }
+    try {
+      const response = await api.get("/skills", { params: { sort: "stars" } });
+      const fresh = dedupeSkills(response.data);
+      if (fresh.length) {
+        writeSkillsCache(fresh);
+        setCatalog(fresh);
+      }
+    } catch {
+      if (!cached.length) toast.error("Não foi possível carregar as skills.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchCatalog();
-  }, []);
+  }, [fetchCatalog]);
 
   // Skill aberta por URL direta
   useEffect(() => {
@@ -252,31 +324,11 @@ export default function Skills() {
       });
   }, [skillId, navigate]);
 
-  // Busca filtrada e ordenada
+  // Filtros e ordenação usam o catálogo local; nenhuma interação precisa esperar rede.
   useEffect(() => {
-    setLoading(true);
-    const params = {};
-    if (category !== ALL) params.category = category;
-    if (kind !== ALL) params.kind = kind;
-    if (level !== ALL) params.level = level;
-    if (targetAi !== ALL) params.target_ai = targetAi;
-    if (source !== ALL) params.source = source;
-    if (sort) params.sort = sort;
-    if (search.trim()) params.search = search.trim();
-
-    const id = setTimeout(() => {
-      api
-        .get("/skills", { params })
-        .then((r) => setSkills(dedupeSkills(r.data)))
-        .catch(() => {
-          setSkills([]);
-          toast.error("Não foi possível carregar as skills.");
-        })
-        .finally(() => setLoading(false));
-    }, 200);
-
-    return () => clearTimeout(id);
-  }, [search, category, kind, level, targetAi, source, sort]);
+    setSkills(filterAndSortSkills(catalog, { search, category, kind, level, targetAi, source, sort }));
+    setLoading(false);
+  }, [catalog, search, category, kind, level, targetAi, source, sort]);
 
   // Contagem de itens por categoria
   const categoryCounts = useMemo(() => {
@@ -911,8 +963,8 @@ export default function Skills() {
         {/* 4. Contador & Status */}
         <div className="flex items-center justify-between pb-1 border-b border-white/5">
           <p className="text-xs sm:text-sm text-white/45">
-            {loading
-              ? "Buscando skills..."
+              {loading
+              ? "Preparando catálogo..."
               : `${skills.length} skills encontradas${
                   sort === "stars" ? " (ordenadas pelas mais bem avaliadas)" : ""
                 }`}

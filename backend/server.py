@@ -1164,6 +1164,16 @@ else:
 # ---------------------------------------------------------------------------
 # Startup: indexes + seed
 # ---------------------------------------------------------------------------
+async def _background_github_sync():
+    """Atualiza o catálogo remoto sem bloquear o primeiro carregamento da aplicação."""
+    await asyncio.sleep(0)
+    try:
+        count = await sync_github_skills_to_db()
+        logger.info("Sincronização inicial de skills executada em background: %s skills.", count)
+    except Exception:
+        logger.exception("Falha na sincronização inicial de skills em background")
+
+
 async def _periodic_github_sync():
     """Sincroniza automaticamente as skills do GitHub em background a cada 1 hora (3600 segundos)."""
     INTERVAL_SECONDS = 3600  # 1 hora
@@ -1190,7 +1200,8 @@ async def startup():
     except Exception as e:
         logger.error(f"Startup com banco falhou (app segue no ar, mas rotas de dados podem falhar): {e}")
     
-    # Inicia a sincronização automática periódica a cada 2 horas em background
+    # O catálogo local já está disponível; as chamadas externas ficam fora do caminho crítico.
+    asyncio.create_task(_background_github_sync())
     asyncio.create_task(_periodic_github_sync())
 
 
@@ -1245,7 +1256,21 @@ async def seed_data():
                 "download_url": p.get("download_url", ""), "tags": p["tags"],
                 "featured": p.get("featured", False), "views": p.get("views", 0),
                 "downloads": p.get("downloads", 0), "created_at": now_iso()})
-    await sync_github_skills_to_db()
+    # Nunca bloqueie o startup esperando o GitHub. Em banco novo, semeie um
+    # catálogo local pequeno e deixe a sincronização remota atualizar depois.
+    if await db.skills.count_documents({}) == 0:
+        for skill in SEED_SKILLS:
+            await db.skills.insert_one({
+                "id": new_id(),
+                "public_id": await new_public_id(db.skills),
+                **skill,
+                "source": skill.get("source", "editorial"),
+                "target_ais": skill.get("target_ais", ["universal"]),
+                "kind": skill.get("kind", "Prompt"),
+                "level": skill.get("level", "Iniciante"),
+                "github_stars": skill.get("github_stars", 0),
+                "created_at": now_iso(),
+            })
     if await db.community_links.count_documents({}) == 0:
         for l in SEED_COMMUNITY:
             await db.community_links.insert_one({"id": new_id(), **l})
