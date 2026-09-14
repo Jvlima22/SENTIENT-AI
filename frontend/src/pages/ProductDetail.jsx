@@ -4,6 +4,7 @@ import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useI18n } from "@/context/I18nContext";
 import { toast } from "sonner";
+import ProductMedia from "@/components/ProductMedia";
 import { ArrowLeft, Download, ShoppingCart, Eye, Check, Loader2, ExternalLink } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -81,9 +82,7 @@ export default function ProductDetail() {
             <span className="flex items-center gap-1.5"><Eye className="w-4 h-4" /> {product.views || 0} visualizações</span>
             {isFree && <span className="flex items-center gap-1.5"><Download className="w-4 h-4" /> {product.downloads || 0} downloads</span>}
           </div>
-          <div className="rounded-xl overflow-hidden border border-white/10 mb-8">
-            <img src={product.thumbnail} alt={product.title} className="w-full aspect-video object-cover" />
-          </div>
+          <ProductMedia product={product} className="aspect-video rounded-xl border border-white/10 mb-8" />
           <h2 className="font-display text-xl mb-3">Descrição</h2>
           <p className="text-white/65 leading-relaxed whitespace-pre-wrap">{product.description}</p>
           {product.tags?.length > 0 && (

@@ -2,24 +2,22 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Download, Eye } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
+import ProductMedia from "@/components/ProductMedia";
 
 export const ProductCard = ({ product, index = 0 }) => {
   const { t } = useI18n();
   const isFree = product.type === "free";
   return (
     <Link to={`/produto/${product.public_id || product.id}`} data-testid={`product-card-${product.id}`}
-      className="group grid-fade-in block rounded-xl bg-[#0F0F13] border border-white/10 p-4 hover:border-white/25 hover:-translate-y-1 transition-transform transition-colors"
+      className="group relative grid-fade-in block rounded-xl bg-[#0F0F13] border border-white/10 p-4 hover:border-white/25 hover:-translate-y-1 transition-transform transition-colors"
       style={{ animationDelay: `${Math.min(index * 60, 480)}ms` }}>
-      <div className="aspect-video rounded-lg overflow-hidden bg-white/5 mb-4 relative">
-        <img src={product.thumbnail} alt={product.title} loading="lazy"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        <div className="absolute top-3 left-3">
-          {isFree ? (
-            <span className="border border-white/25 text-white/70 bg-black/50 backdrop-blur text-xs rounded-full px-2.5 py-1 font-mono-code">{t("free")}</span>
-          ) : (
-            <span className="bg-[#ff7a59] text-black font-bold text-xs rounded-full px-2.5 py-1 premium-glow font-mono-code">R$ {product.price}</span>
-          )}
-        </div>
+      <ProductMedia product={product} className="aspect-video rounded-lg bg-white/5 mb-4" imageClassName="group-hover:scale-105 transition-transform duration-500" />
+      <div className="absolute top-7 left-7">
+        {isFree ? (
+          <span className="border border-white/25 text-white/70 bg-black/50 backdrop-blur text-xs rounded-full px-2.5 py-1 font-mono-code">{t("free")}</span>
+        ) : (
+          <span className="bg-[#ff7a59] text-black font-bold text-xs rounded-full px-2.5 py-1 premium-glow font-mono-code">R$ {product.price}</span>
+        )}
       </div>
       <div className="flex items-center gap-2 mb-2">
         <span className="text-[11px] uppercase tracking-wide text-[#FF7A59]/80 font-mono-code">{product.category_name}</span>
