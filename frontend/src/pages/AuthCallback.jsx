@@ -4,6 +4,8 @@ import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import { Loader2 } from "lucide-react";
 
+import { consumeAuthReturn } from "@/lib/authReturn";
+
 export default function AuthCallback() {
   const nav = useNavigate();
   const loc = useLocation();
@@ -22,7 +24,7 @@ export default function AuthCallback() {
         const { data } = await api.post("/auth/google/session", { session_id: sessionId });
         setUser(data);
         window.history.replaceState(null, "", window.location.pathname);
-        nav(data.role === "admin" ? "/admin" : "/conta");
+        nav(consumeAuthReturn(data.role === "admin" ? "/admin" : "/conta"));
       } catch {
         nav("/login");
       }

@@ -13,6 +13,7 @@ import Home from "@/pages/Home";
 import ProductDetail from "@/pages/ProductDetail";
 import Skills from "@/pages/Skills";
 import Community from "@/pages/Community";
+import CampaignLink from "@/community/CampaignLink";
 import FAQ from "@/pages/FAQ";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -36,7 +37,8 @@ function AppRouter() {
       <Route path="/produto/:id" element={<Layout><ProductDetail /></Layout>} />
       <Route path="/skills" element={<Layout><Skills /></Layout>} />
       <Route path="/skills/:skillId" element={<Layout><Skills /></Layout>} />
-      <Route path="/comunidade" element={<Layout><Community /></Layout>} />
+      <Route path="/comunidade/*" element={<Layout><Community /></Layout>} />
+      <Route path="/c/:keyword" element={<CampaignLink />} />
       <Route path="/faq" element={<Layout><FAQ /></Layout>} />
       <Route path="/login" element={<Login />} />
       <Route path="/cadastro" element={<Register />} />

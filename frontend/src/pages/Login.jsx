@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, formatApiError } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { safeReturnTo, rememberAuthReturn, isInAppBrowser } from "@/lib/authReturn";
 import { Logo } from "@/components/Logo";
 
 export default function Login() {
@@ -13,7 +14,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const from = loc.state?.from || "/";
+  const from = safeReturnTo(loc.state?.from);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -21,7 +22,7 @@ export default function Login() {
     try {
       const u = await login(email, password);
       toast.success(`Bem-vindo, ${u.name?.split(" ")[0]}!`);
-      nav(u.role === "admin" ? "/admin" : from);
+      nav(from !== "/" ? from : u.role === "admin" ? "/admin" : "/");
     } catch (err) {
       setError(formatApiError(err.response?.data?.detail) || err.message);
     } finally { setLoading(false); }
@@ -29,6 +30,7 @@ export default function Login() {
 
   const googleLogin = () => {
     // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+    rememberAuthReturn(from !== "/" ? from : "/conta");
     const redirectUrl = window.location.origin + "/conta";
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
@@ -46,7 +48,7 @@ export default function Login() {
       </form>
       <GoogleBtn onClick={googleLogin} />
       <p className="text-sm text-white/50 text-center mt-6">
-        Não tem conta? <Link to="/cadastro" className="text-[#FF7A59] hover:underline">Criar conta</Link>
+        Não tem conta? <Link to="/cadastro" state={{ from }} className="text-[#FF7A59] hover:underline">Criar conta</Link>
       </p>
     </AuthShell>
   );
@@ -72,14 +74,15 @@ export function AuthShell({ title, subtitle, children }) {
 export function Input({ label, type = "text", value, onChange, testid }) {
   return (
     <div>
-      <label className="text-sm text-white/60 mb-1.5 block">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} data-testid={testid} required
+      <label htmlFor={testid} className="text-sm text-white/60 mb-1.5 block">{label}</label>
+      <input id={testid} type={type} value={value} onChange={(e) => onChange(e.target.value)} data-testid={testid} required
         className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[#FF7A59]/50 transition-colors" />
     </div>
   );
 }
 
 export function GoogleBtn({ onClick }) {
+  if (isInAppBrowser()) return <p className="text-xs text-white/40 text-center mt-5">Aberto pelo Instagram? Use nome, e-mail e senha. O login com Google não funciona dentro do app.</p>;
   return (
     <>
       <div className="flex items-center gap-3 my-5">

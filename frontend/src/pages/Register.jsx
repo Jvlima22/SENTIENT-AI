@@ -1,13 +1,17 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, formatApiError } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { AuthShell, Input, GoogleBtn } from "@/pages/Login";
 
+import { safeReturnTo, rememberAuthReturn } from "@/lib/authReturn";
+
 export default function Register() {
   const { register } = useAuth();
   const nav = useNavigate();
+  const loc = useLocation();
+  const from = safeReturnTo(loc.state?.from);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,8 +23,8 @@ export default function Register() {
     setError(""); setLoading(true);
     try {
       const u = await register(name, email, password);
-      toast.success(`Conta criada! Bem-vindo, ${u.name?.split(" ")[0]}.`);
-      nav("/");
+      toast.success(`Conta criada! Boas-vindas, ${u.name?.split(" ")[0]}.`);
+      nav(from);
     } catch (err) {
       setError(formatApiError(err.response?.data?.detail) || err.message);
     } finally { setLoading(false); }
@@ -28,12 +32,13 @@ export default function Register() {
 
   const googleLogin = () => {
     // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+    rememberAuthReturn(from !== "/" ? from : "/conta");
     const redirectUrl = window.location.origin + "/conta";
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
   return (
-    <AuthShell title="Criar conta" subtitle="Junte-se ao hub SENTIENT-AI">
+    <AuthShell title="Criar conta" subtitle={from.startsWith("/comunidade") ? "Entre grátis na SENTIENT-AI COMMUNITY" : "Junte-se ao hub SENTIENT-AI"}>
       <form onSubmit={submit} className="space-y-4" data-testid="register-form">
         {error && <p className="text-sm text-[#FF3B30] bg-[#FF3B30]/10 border border-[#FF3B30]/20 rounded-lg px-4 py-2.5" data-testid="register-error">{error}</p>}
         <Input label="Nome" value={name} onChange={setName} testid="register-name" />
@@ -46,7 +51,7 @@ export default function Register() {
       </form>
       <GoogleBtn onClick={googleLogin} />
       <p className="text-sm text-white/50 text-center mt-6">
-        Já tem conta? <Link to="/login" className="text-[#FF7A59] hover:underline">Entrar</Link>
+        Já tem conta? <Link to="/login" state={{ from }} className="text-[#FF7A59] hover:underline">Entrar</Link>
       </p>
     </AuthShell>
   );

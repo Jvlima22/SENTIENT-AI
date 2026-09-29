@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend-comunidade",
+      "runtimeExecutable": "backend/venv/Scripts/python.exe",
+      "runtimeArgs": ["backend/preview_community.py"],
+      "port": 8011
+    },
+    {
+      "name": "frontend-comunidade",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd frontend && set REACT_APP_BACKEND_URL=http://127.0.0.1:8011&& set PORT=4178&& set HOST=127.0.0.1&& set BROWSER=none&& npx craco start"],
+      "port": 4178,
+      "url": "http://127.0.0.1:4178"
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+{
+  "name": "SENTIENT | Speed to Lead | Núcleo de Captura",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "speed-to-lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e2c450e5-fc0c-4d70-bc83-99ed800f42d2",
+      "name": "Receber lead do site",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $json.body && typeof $json.body === 'object' ? $json.body : $json;\n\nconst text = (value) => String(value ?? '').trim();\n// Remove barras incluídas acidentalmente em cópias de e-mail, como ana\\@empresa.com.\nconst email = text(payload.email).replace(/\\\\/g, '').toLowerCase();\nconst phone = text(payload.phone || payload.whatsapp).replace(/\\D/g, '');\nconst normalizedPhone = phone && !phone.startsWith('55') && phone.length <= 11 ? `55${phone}` : phone;\nconst name = text(payload.name);\n\nconst validEmail = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);\nconst isValid = Boolean(name) && validEmail;\n\nreturn [{\n  json: {\n    lead_id: `lead_${Date.now()}`,\n    name,\n    email,\n    phone: normalizedPhone,\n    company: text(payload.company),\n    interest: text(payload.interest),\n    message: text(payload.message),\n    source: text(payload.source) || 'site',\n    utm_campaign: text(payload.utm_campaign),\n    page_url: text(payload.page_url),\n    contact_consent: payload.contact_consent === true || payload.contact_consent === 'true' || payload.contact_consent === 'on',\n    received_at: new Date().toISOString(),\n    is_valid: isValid,\n    validation_error: isValid ? '' : 'Confira nome e e-mail e tente novamente.'\n  }\n}];"
+      },
+      "id": "d365c014-5752-4e4b-b8ed-cb12a4a4d777",
+      "name": "Normalizar lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d662aabb-a5ce-4e3f-b701-030299a3bb20",
+              "leftValue": "={{ $json.is_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7c5de505-dd58-494b-bef2-e83299732cca",
+      "name": "Dados válidos?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -160,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f35eeae2-84aa-40c4-9ae5-86c0347e5f16",
+              "name": "priority",
+              "value": "média",
+              "type": "string"
+            },
+            {
+              "id": "22374945-2fec-49dc-93c5-8cfad4c46c26",
+              "name": "summary",
+              "value": "=Lead recebido pelo site. Interesse: {{ $json.interest || 'não informado' }}.",
+              "type": "string"
+            },
+            {
+              "id": "a6d4e0f9-d598-4793-9f78-ddd7a0b22f85",
+              "name": "next_action",
+              "value": "Responder e qualificar necessidade.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {},
+        "includeOtherFields": true
+      },
+      "id": "4f442ffb-83b7-4d44-a3b3-8e871f07ad4f",
+      "name": "Preparar contexto comercial",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, lead_id: $json.lead_id, message: 'Recebemos seu contato. Em breve nossa equipe falará com você.' }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "c3a48c5a-3c76-4ef0-996e-8335490c5aa4",
+      "name": "Responder sucesso ao site",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        320,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, message: $json.validation_error }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "ed001875-8ec2-4b4b-bb64-df64de296de4",
+      "name": "Responder erro ao site",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        80,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Próximos módulos\n\nDepois de validar o núcleo, conecte: CRM, e-mail, IA, alertas e WhatsApp Cloud API.\n\nO guia de instalação está em `README.md`.",
+        "height": 170,
+        "width": 310,
+        "color": 5
+      },
+      "id": "a6845525-8f3a-4d40-a0b4-b657673e005c",
+      "name": "Próximos módulos",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        250,
+        110
+      ]
+    }
+  ],
+  "connections": {
+    "Receber lead do site": {
+      "main": [
+        [
+          {
+            "node": "Normalizar lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar lead": {
+      "main": [
+        [
+          {
+            "node": "Dados válidos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados válidos?": {
+      "main": [
+        [
+          {
+            "node": "Preparar contexto comercial",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder erro ao site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar contexto comercial": {
+      "main": [
+        [
+          {
+            "node": "Responder sucesso ao site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

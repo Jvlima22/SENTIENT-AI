@@ -241,6 +241,15 @@ class AutomationRunInput(BaseModel):
 # ---------------------------------------------------------------------------
 # Auth dependency
 # ---------------------------------------------------------------------------
+# Contas promovidas a administrador pelo e-mail, sem mexer na senha (vale para senha própria e login Google).
+# Diferente do ADMIN_EMAIL, que é uma conta técnica com senha definida pelo servidor.
+ADMIN_EMAILS = {e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "josulima90@gmail.com").split(",") if e.strip()}
+
+
+def role_for(email: str, current: Optional[str]) -> str:
+    return "admin" if (email or "").lower() in ADMIN_EMAILS else (current or "user")
+
+
 async def get_current_user(request: Request) -> dict:
     token = request.cookies.get("access_token")
     if not token:
@@ -258,6 +267,10 @@ async def get_current_user(request: Request) -> dict:
     user = await db.users.find_one({"user_id": payload["sub"]}, {"_id": 0, "password_hash": 0})
     if not user:
         raise HTTPException(status_code=401, detail="Usuário não encontrado")
+    role = role_for(user.get("email"), user.get("role"))
+    if role != user.get("role"):
+        await db.users.update_one({"user_id": user["user_id"]}, {"$set": {"role": role}})
+        user["role"] = role
     return user
 
 
@@ -277,15 +290,16 @@ async def register(data: RegisterInput, response: Response):
     if await db.users.find_one({"email": email}):
         raise HTTPException(status_code=400, detail="Email já cadastrado")
     user_id = f"user_{uuid.uuid4().hex[:12]}"
+    role = role_for(email, "user")
     doc = {"user_id": user_id, "email": email, "name": data.name,
-           "password_hash": hash_password(data.password), "role": "user",
+           "password_hash": hash_password(data.password), "role": role,
            "phone": "", "picture": "", "auth_provider": "password",
            "created_at": now_iso()}
     await db.users.insert_one(doc)
     token = create_access_token(user_id, email)
     set_auth_cookie(response, token)
     await maybe_send_welcome_email(email, data.name)
-    return {"user_id": user_id, "email": email, "name": data.name, "role": "user",
+    return {"user_id": user_id, "email": email, "name": data.name, "role": role,
             "phone": "", "picture": "", "token": token}
 
 
@@ -298,7 +312,7 @@ async def login(data: LoginInput, response: Response):
     token = create_access_token(user["user_id"], email)
     set_auth_cookie(response, token)
     return {"user_id": user["user_id"], "email": email, "name": user.get("name"),
-            "role": user.get("role", "user"), "phone": user.get("phone", ""),
+            "role": role_for(email, user.get("role")), "phone": user.get("phone", ""),
             "picture": user.get("picture", ""), "token": token}
 
 
@@ -330,7 +344,7 @@ async def google_session(request: Request, response: Response):
     token = create_access_token(user["user_id"], email)
     set_auth_cookie(response, token)
     return {"user_id": user["user_id"], "email": email, "name": user.get("name"),
-            "role": user.get("role", "user"), "phone": user.get("phone", ""),
+            "role": role_for(email, user.get("role")), "phone": user.get("phone", ""),
             "picture": user.get("picture", ""), "token": token}
 
 
@@ -1133,6 +1147,9 @@ async def root():
     return {"message": "SENTIENT-AI Hub API", "status": "online"}
 
 
+from community import make_router, initialize_community
+
+api_router.include_router(make_router(lambda: db, get_current_user, get_admin_user))
 app.include_router(api_router)
 
 # Rotas da Árvore de Conexões — registradas no nível do módulo, junto com o
@@ -1221,6 +1238,9 @@ async def _run_startup_tasks():
                                    "created_at": now_iso()})
     elif not verify_password(admin_pass, existing.get("password_hash", "")):
         await db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_pass), "role": "admin"}})
+    if ADMIN_EMAILS:
+        await db.users.update_many({"email": {"$in": sorted(ADMIN_EMAILS)}}, {"$set": {"role": "admin"}})
+    await initialize_community(db)
     await seed_data()
     await ensure_public_ids(db.products)
     await ensure_public_ids(db.skills)

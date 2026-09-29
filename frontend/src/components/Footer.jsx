@@ -1,8 +1,15 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 
-export const Footer = () => (
+export const Footer = () => {
+  const loc = useLocation();
+  // A comunidade funciona como app, com barra lateral fixa ao rolar; o rodapé a empurraria para cima.
+  if (loc.pathname.startsWith("/comunidade")) return null;
+  return <FooterContent />;
+};
+
+const FooterContent = () => (
   <footer className="border-t border-white/10 mt-24 relative z-10" data-testid="footer">
     <div className="max-w-[1400px] mx-auto px-5 md:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-10">
       <div className="md:col-span-2">

@@ -1,46 +1,62 @@
-import React, { useEffect, useState } from "react";
+import React, { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { Link, Navigate, Route, Routes } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
-import { MessageCircle, Send, Instagram, Youtube, Gamepad2, ArrowUpRight, Users, Loader2 } from "lucide-react";
+import { CommunityContext, LoginPrompt, ROOT, State } from "@/community/shared";
+import { clearCampaign, readCampaign } from "@/community/access";
+import { MobileNav, Sidebar } from "@/community/Sidebar";
+import Home from "@/community/Home";
+import Onboarding from "@/community/Onboarding";
+import Channel from "@/community/Channel";
+import LibraryPage from "@/community/LibraryPage";
+import Events from "@/community/Events";
+import MySpace from "@/community/MySpace";
+import VipLocked from "@/community/VipLocked";
+import "@/community/community.css";
+const Admin = lazy(() => import("@/community/Admin"));
 
-const ICONS = { "message-circle": MessageCircle, send: Send, instagram: Instagram, youtube: Youtube, "gamepad-2": Gamepad2 };
-
+// Comunidade no formato Whop: vitrine pública (canais e materiais visíveis), página do material e ações só com conta.
 export default function Community() {
-  const [links, setLinks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => { api.get("/community").then((r) => { setLinks(r.data); setLoading(false); }); }, []);
+  const { user, loading } = useAuth();
+  const [overview, setOverview] = useState(null);
+  const member = !!user;
+  const refreshOverview = useCallback(() => api.get(ROOT + "/overview").then(r => setOverview(r.data)).catch(() => {}), []);
 
-  return (
-    <div className="max-w-[1400px] mx-auto px-5 md:px-8 py-12">
-      <div className="flex items-center gap-2 mb-3">
-        <Users className="w-6 h-6 text-[#FF7A59]" />
-        <span className="text-xs uppercase tracking-wide text-[#FF7A59] font-mono-code">Conecte-se</span>
-      </div>
-      <h1 className="font-display font-800 text-3xl sm:text-4xl md:text-5xl tracking-tight mb-4">Comunidade</h1>
-      <p className="text-white/55 max-w-2xl mb-12 leading-relaxed">Participe dos nossos canais, receba novidades em primeira mão e troque ideias com a comunidade SENTIENT-AI.</p>
+  useEffect(() => {
+    if (loading || user === null) return;
+    if (!member) { refreshOverview(); return; }
+    // Registra a entrada (com a origem do Reel, se houver) e a presença.
+    const campaign = readCampaign();
+    api.post(ROOT + "/join", campaign || {}).then(() => clearCampaign()).catch(() => {}).finally(refreshOverview);
+    api.post(ROOT + "/activity", { event: "visit" }).catch(() => {});
+  }, [loading, user, member, refreshOverview]);
 
-      {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-[#FF7A59] animate-spin" /></div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="community-grid">
-          {links.map((l, i) => {
-            const Icon = ICONS[l.icon] || MessageCircle;
-            return (
-              <a key={l.id} href={l.url} target="_blank" rel="noreferrer" data-testid={`community-${l.platform}`}
-                className="grid-fade-in group rounded-xl bg-[#0F0F13] border border-white/10 p-6 hover:border-[#FF7A59]/30 hover:-translate-y-1 transition-transform transition-colors"
-                style={{ animationDelay: `${i * 70}ms` }}>
-                <div className="flex items-start justify-between mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-[#FF7A59]/10 flex items-center justify-center group-hover:bg-[#FF7A59]/20 transition-colors">
-                    <Icon className="w-6 h-6 text-[#FF7A59]" />
-                  </div>
-                  <ArrowUpRight className="w-5 h-5 text-white/30 group-hover:text-[#FF7A59] transition-colors" />
-                </div>
-                <h3 className="font-display text-lg mb-2">{l.name}</h3>
-                <p className="text-sm text-white/50 leading-relaxed">{l.description}</p>
-              </a>
-            );
-          })}
-        </div>
-      )}
+  if (loading || user === null) return <div className="community-app"><State loading /></div>;
+  const link = path => "/comunidade" + (path ? "/" + path : "");
+  const onlyMembers = (el, title, text) => member ? el : <div className="w-page"><LoginPrompt title={title}>{text}</LoginPrompt></div>;
+
+  return <CommunityContext.Provider value={{ overview, refreshOverview }}>
+    <div className="community-app w-app">
+      <a href="#community-main" className="c-skip">Pular para o conteúdo</a>
+      <Sidebar />
+      <main className="w-main" id="community-main" tabIndex={-1}>
+        <MobileNav />
+        <Suspense fallback={<State loading />}><Routes>
+          <Route index element={<Home />} />
+          <Route path="onboarding" element={<Onboarding />} />
+          <Route path="apresente-se/*" element={<Channel channel="apresente-se" />} />
+          <Route path="anuncios/*" element={<Channel channel="anuncios" />} />
+          <Route path="chat/*" element={<Channel channel="chat" />} />
+          <Route path="discussoes/*" element={<Navigate to="/comunidade/chat" replace />} />
+          <Route path="comecar" element={<Navigate to="/comunidade/onboarding" replace />} />
+          <Route path="biblioteca/*" element={<LibraryPage />} />
+          <Route path="encontros" element={<Events />} />
+          <Route path="meu-espaco" element={onlyMembers(<MySpace />, "Seu espaço", "Entre para ver seus materiais salvos e downloads.")} />
+          <Route path="vip/:slug" element={<VipLocked />} />
+          <Route path="admin" element={user?.role === "admin" ? <div className="w-page"><Admin /></div> : <div className="w-page"><div className="c-empty">Área exclusiva da equipe.</div></div>} />
+          <Route path="*" element={<div className="w-page"><div className="c-empty"><h1>Página não encontrada</h1><Link to="/comunidade">Voltar ao início</Link></div></div>} />
+        </Routes></Suspense>
+      </main>
     </div>
-  );
+  </CommunityContext.Provider>;
 }
