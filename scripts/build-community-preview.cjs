@@ -1,0 +1,11 @@
+const fs=require('node:fs');const path=require('node:path');
+process.chdir(path.resolve(__dirname,'../frontend'));
+process.env.REACT_APP_BACKEND_URL='http://127.0.0.1:8011';
+process.env.REACT_APP_COMMUNITY_PREVIEW='true';
+process.env.BUILD_PATH='build-community-preview';
+process.env.CI='true';
+const log=path.resolve(__dirname,'../frontend/community-build.log');fs.writeFileSync(log,'Build started\n');
+process.stdout.write=(chunk)=>{fs.appendFileSync(log,chunk);return true;};
+process.stderr.write=(chunk)=>{fs.appendFileSync(log,chunk);return true;};
+process.on('exit',code=>fs.appendFileSync(log,'\nBuild exit: '+code+'\n'));
+require('../frontend/node_modules/@craco/craco/dist/scripts/build.js');
